@@ -1,0 +1,112 @@
+<!doctype html><html lang=zh-TW><meta charset=UTF-8><meta content="width=device-width" name=viewport><meta media="(prefers-color-scheme: light)" content=#222 name=theme-color><meta media="(prefers-color-scheme: dark)" content=#222 name=theme-color><meta content="Hexo 7.3.0" name=generator><link href=/images/apple-touch-icon-next.png rel=apple-touch-icon sizes=180x180><link href=/images/favicon-32x32-next.png rel=icon sizes=32x32 type=image/png><link href=/images/favicon-16x16-next.png rel=icon sizes=16x16 type=image/png><link color=#222 href=/images/logo.svg rel=mask-icon><link href=/css/main.css rel=stylesheet><link integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css rel=stylesheet><link integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin href=https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css rel=stylesheet><script class=next-config data-name=main type=application/json>{"hostname":"j84637587.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.23.2","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜尋...","empty":"我們無法找到任何有關 ${query} 的搜索結果","hits_time":"找到 ${hits} 個搜索結果（用時 ${time} 毫秒）","hits":"找到 ${hits} 個搜索結果"}}</script><script defer src=/js/config.js></script><meta content="什麼是 1x1 卷積層？ 1x1 卷積層是一種特殊的卷積操作，其中卷積核的尺寸為 1x1。這意味著每次卷積操作只會影響輸入特徵圖中的單個像素，但會跨通道進行計算。  1x1 卷積層的用途 1x1 卷積層在深度學習中有以下幾個主要用途：  降維或升維：通過調整輸出通道數，1x1 卷積層可以用於壓縮或擴展特徵圖的通道數，從而減少計算量或增加模型表達能力。 非線性映射：1x1 卷積層可以引入非線性激活" name=description><meta content=article property=og:type><meta content="1x1 卷積層介紹" property=og:title><meta content=https://j84637587.github.io/2025/05/01/2025-05-01-1x1%E5%8D%B7%E7%A9%8D%E4%BB%8B%E7%B4%B9/index.html property=og:url><meta content="SpicyRat's Engineer Journey" property=og:site_name><meta content="什麼是 1x1 卷積層？ 1x1 卷積層是一種特殊的卷積操作，其中卷積核的尺寸為 1x1。這意味著每次卷積操作只會影響輸入特徵圖中的單個像素，但會跨通道進行計算。  1x1 卷積層的用途 1x1 卷積層在深度學習中有以下幾個主要用途：  降維或升維：通過調整輸出通道數，1x1 卷積層可以用於壓縮或擴展特徵圖的通道數，從而減少計算量或增加模型表達能力。 非線性映射：1x1 卷積層可以引入非線性激活" property=og:description><meta content=zh_TW property=og:locale><meta content=2025-05-01T06:06:12.000Z property=article:published_time><meta content=2025-07-19T13:22:43.370Z property=article:modified_time><meta content=SpicyRat property=article:author><meta content=卷積神經網絡 property=article:tag><meta content=深度學習 property=article:tag><meta content="1x1 卷積" property=article:tag><meta content=summary name=twitter:card><link href=https://j84637587.github.io/2025/05/01/2025-05-01-1x1%E5%8D%B7%E7%A9%8D%E4%BB%8B%E7%B4%B9/ rel=canonical><script class=next-config data-name=page type=application/json>{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-TW","comments":true,"permalink":"https://j84637587.github.io/2025/05/01/2025-05-01-1x1%E5%8D%B7%E7%A9%8D%E4%BB%8B%E7%B4%B9/","path":"2025/05/01/2025-05-01-1x1卷積介紹/","title":"1x1 卷積層介紹"}</script><script class=next-config data-name=calendar type=application/json>""</script><title>1x1 卷積層介紹 | SpicyRat's Engineer Journey</title><script integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin defer src=https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js></script><script defer src=/js/utils.js></script><script defer src=/js/motion.js></script><script defer src=/js/sidebar.js></script><script defer src=/js/next-boot.js></script><script class=next-config data-name=enableMath type=application/json>true</script><link integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin href=https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css rel=stylesheet><noscript><link href=/css/noscript.css rel=stylesheet></noscript><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}</style><body class=use-motion itemscope itemtype=http://schema.org/WebPage><div class=headband></div><main class=main><div class=column><header class=header itemscope itemtype=http://schema.org/WPHeader><div class=site-brand-container><div class=site-nav-toggle><div aria-label=切換導航欄 class=toggle role=button><span class=toggle-line></span><span class=toggle-line></span><span class=toggle-line></span></div></div><div class=site-meta><a class=brand href=/ rel=start> <i class=logo-line></i> <p class=site-title>SpicyRat's Engineer Journey</p> <i class=logo-line></i> </a></div><div class=site-nav-right><div class="toggle popup-trigger" aria-label=搜尋 role=button></div></div></div><nav class=site-nav><ul class="main-menu menu"><li class="menu-item menu-item-home"><a href=/ rel=section><i class="fa fa-home fa-fw"></i>首頁</a><li class="menu-item menu-item-about"><a href=/about/ rel=section><i class="fa fa-user fa-fw"></i>關於</a><li class="menu-item menu-item-tags"><a href=/tags/ rel=section><i class="fa fa-tags fa-fw"></i>標籤</a><li class="menu-item menu-item-categories"><a href=/categories/ rel=section><i class="fa fa-th fa-fw"></i>分類</a><li class="menu-item menu-item-archives"><a href=/archives/ rel=section><i class="fa fa-archive fa-fw"></i>歸檔</a></ul></nav></header><aside class=sidebar><div class="sidebar-inner sidebar-nav-active sidebar-toc-active"><ul class=sidebar-nav><li class=sidebar-nav-toc>文章目錄<li class=sidebar-nav-overview>本站概要</ul><div class=sidebar-panel-container><!--noindex--><div class="post-toc-wrap sidebar-panel"><div class="post-toc animated"><ol class=nav><li class="nav-item nav-level-2"><a class=nav-link href=#%E4%BB%80%E9%BA%BC%E6%98%AF-1x1-%E5%8D%B7%E7%A9%8D%E5%B1%A4><span class=nav-number>1.</span> <span class=nav-text> 什麼是 1x1 卷積層？</span></a><li class="nav-item nav-level-2"><a class=nav-link href=#1x1-%E5%8D%B7%E7%A9%8D%E5%B1%A4%E7%9A%84%E7%94%A8%E9%80%94><span class=nav-number>2.</span> <span class=nav-text> 1x1 卷積層的用途</span></a><li class="nav-item nav-level-2"><a class=nav-link href=#1x1-%E5%8D%B7%E7%A9%8D%E5%B1%A4%E7%AD%89%E5%90%8C%E6%96%BC%E7%B7%9A%E6%80%A7%E5%B1%A4linear%E5%97%8E><span class=nav-number>3.</span> <span class=nav-text> 1x1 卷積層等同於線性層(Linear)嗎?</span></a><li class="nav-item nav-level-2"><a class=nav-link href=#1x1-%E5%8D%B7%E7%A9%8D%E5%B1%A4%E7%9A%84%E6%95%B8%E5%AD%B8%E8%A1%A8%E7%A4%BA><span class=nav-number>4.</span> <span class=nav-text> 1x1 卷積層的數學表示</span></a><li class="nav-item nav-level-2"><a class=nav-link href=#1x1-%E5%8D%B7%E7%A9%8D%E5%B1%A4%E7%9A%84%E5%84%AA%E5%8B%A2><span class=nav-number>5.</span> <span class=nav-text> 1x1 卷積層的優勢</span></a><li class="nav-item nav-level-2"><a class=nav-link href=#%E7%B5%90%E8%AB%96><span class=nav-number>6.</span> <span class=nav-text> 結論</span></a></ol></div></div><!--/noindex--><div class="site-overview-wrap sidebar-panel"><div class="site-author animated" itemprop=author itemscope itemtype=http://schema.org/Person><p class=site-author-name itemprop=name>SpicyRat<div class=site-description itemprop=description></div></div><div class="site-state-wrap animated"><nav class=site-state><div class="site-state-item site-state-posts"><a href=/archives/> <span class=site-state-item-count>4</span> <span class=site-state-item-name>文章</span> </a></div><div class="site-state-item site-state-tags"><a href=/tags/> <span class=site-state-item-count>5</span> <span class=site-state-item-name>標籤</span></a></div></nav></div></div></div></div></aside></div><div class="main-inner post posts-expand"><div class=post-block><article class=post-content itemscope itemtype=http://schema.org/Article lang=zh-TW><link href=https://j84637587.github.io/2025/05/01/2025-05-01-1x1%E5%8D%B7%E7%A9%8D%E4%BB%8B%E7%B4%B9/ itemprop=mainEntityOfPage><span hidden itemprop=author itemscope itemtype=http://schema.org/Person> <meta content=/images/avatar.gif itemprop=image> <meta content=SpicyRat itemprop=name> </span><span hidden itemprop=publisher itemscope itemtype=http://schema.org/Organization> <meta content="SpicyRat's Engineer Journey" itemprop=name> <meta itemprop=description> </span><span hidden itemprop=post itemscope itemtype=http://schema.org/CreativeWork> <meta content="1x1 卷積層介紹 | SpicyRat's Engineer Journey" itemprop=name> <meta itemprop=description> </span><header class=post-header><h1 itemprop="name headline" class=post-title>1x1 卷積層介紹</h1><div class=post-meta-container><div class=post-meta><span class=post-meta-item> <span class=post-meta-item-icon> <i class="far fa-calendar"></i> </span> <span class=post-meta-item-text>發表於</span> <time itemprop="dateCreated datePublished" title="創建時間：2025-05-01 14:06:12" datetime=2025-05-01T14:06:12+08:00>2025-05-01</time> </span><span class=post-meta-item> <span class=post-meta-item-icon> <i class="far fa-calendar-check"></i> </span> <span class=post-meta-item-text>更新於</span> <time title="修改時間：2025-07-19 21:22:43" datetime=2025-07-19T21:22:43+08:00 itemprop=dateModified>2025-07-19</time> </span></div></div></header><div class=post-body itemprop=articleBody><h2 id=什麼是-1x1-卷積層><a class=markdownIt-Anchor href=#什麼是-1x1-卷積層></a> 什麼是 1x1 卷積層？</h2><p>1x1 卷積層是一種特殊的卷積操作，其中卷積核的尺寸為 1x1。這意味著每次卷積操作只會影響輸入特徵圖中的單個像素，但會跨通道進行計算。<h2 id=1x1-卷積層的用途><a class=markdownIt-Anchor href=#1x1-卷積層的用途></a> 1x1 卷積層的用途</h2><p>1x1 卷積層在深度學習中有以下幾個主要用途：<ol><li><strong>降維或升維</strong>：通過調整輸出通道數，1x1 卷積層可以用於壓縮或擴展特徵圖的通道數，從而減少計算量或增加模型表達能力。<li><strong>非線性映射</strong>：1x1 卷積層可以引入非線性激活函數（如 ReLU），從而增加模型的非線性表達能力。<li><strong>特徵融合</strong>：通過跨通道的加權求和，1x1 卷積層可以實現不同通道特徵的融合。</ol><h2 id=1x1-卷積層等同於線性層linear嗎><a class=markdownIt-Anchor href=#1x1-卷積層等同於線性層linear嗎></a> 1x1 卷積層等同於線性層(Linear)嗎?</h2><p>讓我們來簡單寫個程式驗證一下這兩者是否相同:<figure class="highlight python"><table><tr><td class=gutter><pre><span class=line>1</span><br><span class=line>2</span><br><span class=line>3</span><br><span class=line>4</span><br><span class=line>5</span><br><span class=line>6</span><br><span class=line>7</span><br><span class=line>8</span><br><span class=line>9</span><br><span class=line>10</span><br><span class=line>11</span><br><span class=line>12</span><br><span class=line>13</span><br><span class=line>14</span><br><span class=line>15</span><br><span class=line>16</span><br><span class=line>17</span><br><span class=line>18</span><br><span class=line>19</span><br><span class=line>20</span><br><span class=line>21</span><br></pre><td class=code><pre><span class=line><span class=keyword>import</span> torch</span><br><span class=line><span class=keyword>import</span> torch.nn <span class=keyword>as</span> nn</span><br><span class=line></span><br><span class=line><span class=comment># 模擬一個輸入影像 (batch=2, channels=3, height=4, width=4)</span></span><br><span class=line>x = torch.randn(<span class=number>2</span>, <span class=number>3</span>, <span class=number>4</span>, <span class=number>4</span>)</span><br><span class=line></span><br><span class=line><span class=comment># 用 1x1 conv</span></span><br><span class=line>conv2d = nn.Conv2d(in_channels=<span class=number>3</span>, out_channels=<span class=number>5</span>, kernel_size=<span class=number>1</span>, bias=<span class=literal>False</span>)</span><br><span class=line>out_conv2d = conv2d(x)  <span class=comment># shape: (2, 5, 4, 4)</span></span><br><span class=line></span><br><span class=line><span class=comment># 將輸入 reshape 成 (batch*H*W, in_channels)</span></span><br><span class=line>x_reshaped = x.permute(<span class=number>0</span>, <span class=number>2</span>, <span class=number>3</span>, <span class=number>1</span>).reshape(-<span class=number>1</span>, <span class=number>3</span>)  <span class=comment># shape: (2*4*4, 3)</span></span><br><span class=line></span><br><span class=line><span class=comment># 用 Linear 層做同樣的轉換</span></span><br><span class=line>linear = nn.Linear(<span class=number>3</span>, <span class=number>5</span>, bias=<span class=literal>False</span>)</span><br><span class=line><span class=comment># 將 Linear 權重設為 conv2d 的權重</span></span><br><span class=line>linear.weight.data = conv2d.weight.data.reshape(<span class=number>5</span>, <span class=number>3</span>)</span><br><span class=line>out_linear = linear(x_reshaped).reshape(<span class=number>2</span>, <span class=number>4</span>, <span class=number>4</span>, <span class=number>5</span>).permute(<span class=number>0</span>, <span class=number>3</span>, <span class=number>1</span>, <span class=number>2</span>)  <span class=comment># shape: (2, 5, 4, 4)</span></span><br><span class=line></span><br><span class=line><span class=comment># 比較兩個輸出是否相等</span></span><br><span class=line><span class=built_in>print</span>(<span class=string>"1x1 Conv2d == Linear:"</span>, torch.allclose(out_conv2d, out_linear, atol=<span class=number>1e-6</span>))</span><br></pre></table></figure><p>一維的情況:<figure class="highlight plaintext"><table><tr><td class=gutter><pre><span class=line>1</span><br><span class=line>2</span><br><span class=line>3</span><br><span class=line>4</span><br><span class=line>5</span><br><span class=line>6</span><br><span class=line>7</span><br><span class=line>8</span><br><span class=line>9</span><br></pre><td class=code><pre><span class=line>conv1d = nn.Conv1d(3, 5, kernel_size=1, bias=False)</span><br><span class=line>out_conv1d = conv1d(x1d)</span><br><span class=line></span><br><span class=line>linear1d = nn.Linear(3, 5, bias=False)</span><br><span class=line>linear1d.weight.data = conv1d.weight.data.squeeze(-1)  # conv1d.weight shape: (5, 3, 1)</span><br><span class=line>x1d_reshaped = x1d.permute(0, 2, 1).reshape(-1, 3)</span><br><span class=line>out_linear1d = linear1d(x1d_reshaped).reshape(2, 10, 5).permute(0, 2, 1)</span><br><span class=line></span><br><span class=line>print("1D Conv1d == Linear:", torch.allclose(out_conv1d, out_linear1d, atol=1e-6))</span><br></pre></table></figure><h2 id=1x1-卷積層的數學表示><a class=markdownIt-Anchor href=#1x1-卷積層的數學表示></a> 1x1 卷積層的數學表示</h2><p>假設輸入特徵圖的尺寸為 ( H \times W \times C_{in} )，1x1 卷積層的輸出特徵圖尺寸為 ( H \times W \times C_{out} )。其計算公式為：<p>[<br> Y_{h,w,c} = \sum_{i=1}^{C_{in}} X_{h,w,i} \cdot W_{i,c} + b_c<br> ]<p>其中：<ul><li>( X_{h,w,i} ) 是輸入特徵圖在位置 ( (h, w) ) 和通道 ( i ) 的值。<li>( W_{i,c} ) 是 1x1 卷積核的權重。<li>( b_c ) 是偏置項。<li>( Y_{h,w,c} ) 是輸出特徵圖在位置 ( (h, w) ) 和通道 ( c ) 的值。</ul><h2 id=1x1-卷積層的優勢><a class=markdownIt-Anchor href=#1x1-卷積層的優勢></a> 1x1 卷積層的優勢</h2><ul><li><strong>計算效率高</strong>：相比於更大的卷積核，1x1 卷積層的計算量更小。<li><strong>靈活性強</strong>：可以靈活調整通道數，適用於各種網絡結構。<li><strong>應用廣泛</strong>：在 GoogLeNet（Inception 模型）和 ResNet 等經典網絡中廣泛使用。</ul><h2 id=結論><a class=markdownIt-Anchor href=#結論></a> 結論</h2><p>1x1 卷積層是一種簡單但功能強大的卷積操作，能夠有效地提升模型的表達能力，同時降低計算成本。在設計卷積神經網絡時，合理使用 1x1 卷積層可以帶來顯著的性能提升。</div><footer class=post-footer><div class=post-tags><a href=/tags/%E5%8D%B7%E7%A9%8D%E7%A5%9E%E7%B6%93%E7%B6%B2%E7%B5%A1/ rel=tag># 卷積神經網絡</a><a href=/tags/%E6%B7%B1%E5%BA%A6%E5%AD%B8%E7%BF%92/ rel=tag># 深度學習</a><a href=/tags/1x1-%E5%8D%B7%E7%A9%8D/ rel=tag># 1x1 卷積</a></div><div class=post-nav><div class=post-nav-item></div><div class=post-nav-item><a href=/2025/07/09/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/ rel=next title=ROC曲線詳解-機器學習模型評估的重要指標> ROC曲線詳解-機器學習模型評估的重要指標 <i class="fa fa-angle-right"></i> </a></div></div></footer></article></div></div></main><footer class=footer><div class=footer-inner><div class=copyright>© <span itemprop=copyrightYear>2025</span><span class=with-love> <i class="fa fa-heart"></i> </span><span class=author itemprop=copyrightHolder><a href=https://github.com/j84637587 rel=noopener target=_blank>SpicyRat</a></span></div><div class=powered-by>由 <a href=https://hexo.io/ rel=noopener target=_blank>Hexo</a> & <a href=https://theme-next.js.org/pisces/ rel=noopener target=_blank>NexT.Pisces</a> 強力驅動</div></div></footer><div class="toggle sidebar-toggle" role=button><span class=toggle-line></span><span class=toggle-line></span><span class=toggle-line></span></div><div class=sidebar-dimmer></div><div aria-label=回到頂端 class=back-to-top role=button><i class="fa fa-arrow-up fa-lg"></i><span>0%</span></div><noscript><div class=noscript-warning>Theme NexT works best with JavaScript enabled</div></noscript>
