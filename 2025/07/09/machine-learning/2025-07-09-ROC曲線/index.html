@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"j84637587.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜尋...","empty":"我們無法找到任何有關 ${query} 的搜索結果","hits_time":"找到 ${hits} 個搜索結果（用時 ${time} 毫秒）","hits":"找到 ${hits} 個搜索結果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="ROC 指標介紹  圖片來源：https:&#x2F;&#x2F;www.nomidl.com&#x2F;machine-learning&#x2F;what-is-the-roc-curve&#x2F; ROC（Receiver Operating Characteristic）曲線是一種用於評估分類模型效能的指標，特別適用於 二分類問題。 ROC 曲線的橫軸是FPR（False Positive Rate），縱軸是TPR（True Posi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ROC曲線詳解-機器學習模型評估的重要指標">
+<meta property="og:url" content="https://j84637587.github.io/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/index.html">
+<meta property="og:site_name" content="SpicyRat&#39;s Engineer Journey">
+<meta property="og:description" content="ROC 指標介紹  圖片來源：https:&#x2F;&#x2F;www.nomidl.com&#x2F;machine-learning&#x2F;what-is-the-roc-curve&#x2F; ROC（Receiver Operating Characteristic）曲線是一種用於評估分類模型效能的指標，特別適用於 二分類問題。 ROC 曲線的橫軸是FPR（False Positive Rate），縱軸是TPR（True Posi">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://j84637587.github.io/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/roc_curve_example.png">
+<meta property="og:image" content="https://j84637587.github.io/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/roc_curve.png">
+<meta property="article:published_time" content="2025-07-08T16:55:06.000Z">
+<meta property="article:modified_time" content="2026-03-10T12:43:43.042Z">
+<meta property="article:author" content="SpicyRat">
+<meta property="article:tag" content="深度學習 指標">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://j84637587.github.io/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/roc_curve_example.png">
+
+
+<link rel="canonical" href="https://j84637587.github.io/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-TW","comments":true,"permalink":"https://j84637587.github.io/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/","path":"2025/07/09/machine-learning/2025-07-09-ROC曲線/","title":"ROC曲線詳解-機器學習模型評估的重要指標"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ROC曲線詳解-機器學習模型評估的重要指標 | SpicyRat's Engineer Journey</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SpicyRat's Engineer Journey</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜尋" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>關於</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分類</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#roc-%E6%8C%87%E6%A8%99%E4%BB%8B%E7%B4%B9"><span class="nav-number">1.</span> <span class="nav-text"> ROC 指標介紹</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A1%88%E4%BE%8B%E8%AA%AA%E6%98%8E"><span class="nav-number">1.1.</span> <span class="nav-text"> 案例說明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E7%A8%8B%E5%BC%8F%E7%A2%BC"><span class="nav-number">1.1.1.</span> <span class="nav-text"> 參考程式碼</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%B6%E4%BC%B8%E8%AD%B0%E9%A1%8C-accuracy-%E8%88%87-roc-%E5%93%AA%E5%80%8B%E6%AF%94%E8%BC%83%E8%83%BD%E4%BB%A3%E8%A1%A8%E6%A8%A1%E5%9E%8B%E6%80%A7%E8%83%BD"><span class="nav-number">1.2.</span> <span class="nav-text"> [延伸議題] Accuracy 與 ROC 哪個比較能代表模型性能？</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">SpicyRat</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://j84637587.github.io/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="SpicyRat">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="ROC曲線詳解-機器學習模型評估的重要指標 | SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ROC曲線詳解-機器學習模型評估的重要指標
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">發表於</span>
+
+      <time title="創建時間：2025-07-09 00:55:06" itemprop="dateCreated datePublished" datetime="2025-07-09T00:55:06+08:00">2025-07-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新於</span>
+      <time title="修改時間：2026-03-10 20:43:43" itemprop="dateModified" datetime="2026-03-10T20:43:43+08:00">2026-03-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="roc-指標介紹"><a class="markdownIt-Anchor" href="#roc-指標介紹"></a> ROC 指標介紹</h1>
+<img src="/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/roc_curve_example.png" class="" title="ROC曲線">
+<p>圖片來源：<a target="_blank" rel="noopener" href="https://www.nomidl.com/machine-learning/what-is-the-roc-curve/">https://www.nomidl.com/machine-learning/what-is-the-roc-curve/</a></p>
+<p>ROC（Receiver Operating Characteristic）曲線是一種用於評估分類模型效能的指標，特別適用於 <strong>二分類問題</strong>。</p>
+<p>ROC 曲線的橫軸是<strong>FPR（False Positive Rate）</strong>，縱軸是<strong>TPR（True Positive Rate）</strong>，也稱為召回率（Recall）。</p>
+<ul>
+<li>TPR（真正率）= TP / (TP + FN)：模型成功預測為正例的比例。</li>
+<li>FPR（假陽性率）= FP / (FP + TN)：實際為負例卻被錯誤預測為正例的比例。</li>
+</ul>
+<p>ROC 曲線呈現模型在不同閾值（threshold）下的分類表現，曲線越靠近左上角，表示模型效能越好。</p>
+<h2 id="案例說明"><a class="markdownIt-Anchor" href="#案例說明"></a> 案例說明</h2>
+<p>假設今天我們訓練了一個模型判斷一張圖片是不是貓(1)，然後用 10 張圖片測試他，並用測試的結果計算 ROC 曲線，結果如下表。</p>
+<ul>
+<li>模型輸出是0~1的值，代表的是一張圖片是貓的機率。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>真實標籤</th>
+<th>預測機率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>0.6</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>0.7</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0</td>
+<td>0.7</td>
+</tr>
+<tr>
+<td>9</td>
+<td>1</td>
+<td>0.6</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+<td>0.9</td>
+</tr>
+</tbody>
+</table>
+<p>得到預測機率表後，我們首先根據預測機率做排序。</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>真實標籤</th>
+<th>預測機率 ⬇</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>0.7</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0</td>
+<td>0.7</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>0.6</td>
+</tr>
+<tr>
+<td>9</td>
+<td>1</td>
+<td>0.6</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0</td>
+<td>0.1</td>
+</tr>
+</tbody>
+</table>
+<p>接下來我們要去計算不同閾值下的 TPR、FPR，也就是計算出 TP、FP、FN、TN。</p>
+<p>例如閾值為 0.6 時 <code>#3</code> 的預測機率是 0.6 大於等於閾值，則視為模型預測為 True(1) 而 <code>#3</code> 真實標籤是 True(1)，表示這時是 TP。</p>
+<p>反之當閾值為 0.7 時 <code>#3</code> 的預測機率是 0.6 小於閾值，則視為模型預測為 False(0) 而 <code>#3</code> 真實標籤是 True(1)，表示這時是 FN。</p>
+<p>依照這個規則我們可以計算出下面這張表(0.2~0.3,0.5省略)。</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>真實標籤</th>
+<th>預測機率</th>
+<th>閾值=0.9</th>
+<th>閾值=0.8</th>
+<th>閾值=0.7</th>
+<th>閾值=0.6</th>
+<th>閾值=0.4</th>
+<th>閾值=0.1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0.9</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+<td>0.9</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>0.8</td>
+<td>FN</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>0.8</td>
+<td>TN</td>
+<td>FP</td>
+<td>FP</td>
+<td>FP</td>
+<td>FP</td>
+<td>FP</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>0.7</td>
+<td>FN</td>
+<td>FN</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0</td>
+<td>0.7</td>
+<td>TN</td>
+<td>TN</td>
+<td>FP</td>
+<td>FP</td>
+<td>FP</td>
+<td>FP</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>0.6</td>
+<td>FN</td>
+<td>FN</td>
+<td>FN</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+</tr>
+<tr>
+<td>9</td>
+<td>1</td>
+<td>0.6</td>
+<td>FN</td>
+<td>FN</td>
+<td>FN</td>
+<td>TP</td>
+<td>TP</td>
+<td>TP</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0</td>
+<td>0.4</td>
+<td>TN</td>
+<td>TN</td>
+<td>TN</td>
+<td>TN</td>
+<td>FP</td>
+<td>FP</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0</td>
+<td>0.1</td>
+<td>TN</td>
+<td>TN</td>
+<td>TN</td>
+<td>TN</td>
+<td>TN</td>
+<td>FP</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>TP=2</td>
+<td>TP=3</td>
+<td>TP=4</td>
+<td>TP=6</td>
+<td>TP=6</td>
+<td>TP=6</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>FN=4</td>
+<td>FN=3</td>
+<td>FN=2</td>
+<td>FN=0</td>
+<td>FN=0</td>
+<td>FN=0</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>FP=0</td>
+<td>FP=1</td>
+<td>FP=2</td>
+<td>FP=2</td>
+<td>FP=3</td>
+<td>FP=4</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>TN=4</td>
+<td>TN=3</td>
+<td>TN=2</td>
+<td>TN=2</td>
+<td>TN=1</td>
+<td>TN=0</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>FPR=0</td>
+<td>FPR=1/4</td>
+<td>FPR=2/4</td>
+<td>FPR=2/4</td>
+<td>FPR=3/4</td>
+<td>FPR=4/4</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>TPR=2/6</td>
+<td>TPR=3/6</td>
+<td>TPR=4/6</td>
+<td>TPR=6/6</td>
+<td>TPR=6/6</td>
+<td>TPR=6/6</td>
+</tr>
+</tbody>
+</table>
+<p>轉換成小數點：</p>
+<table>
+<thead>
+<tr>
+<th>閾值=0.9</th>
+<th>閾值=0.8</th>
+<th>閾值=0.7</th>
+<th>閾值=0.6</th>
+<th>閾值=0.4</th>
+<th>閾值=0.1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FPR=0.00</td>
+<td>FPR=0.25</td>
+<td>FPR=0.50</td>
+<td>FPR=0.50</td>
+<td>FPR=0.75</td>
+<td>FPR=1.00</td>
+</tr>
+<tr>
+<td>TPR=0.33</td>
+<td>TPR=0.50</td>
+<td>TPR=0.66</td>
+<td>TPR=1.00</td>
+<td>TPR=1.00</td>
+<td>TPR=1.00</td>
+</tr>
+</tbody>
+</table>
+<p>依照計算出來的 FPR、TPR 就可以繪製出 ROC 曲線了。</p>
+<p>最主要看得方式：</p>
+<ul>
+<li>曲線在虛線對角線下： 模型表現極差。</li>
+<li>曲線在虛線對角線上： 模型表現可以，曲線愈靠左上角愈好。</li>
+</ul>
+<img src="/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/roc_curve.png" class="" title="ROC曲線">
+<h3 id="參考程式碼"><a class="markdownIt-Anchor" href="#參考程式碼"></a> 參考程式碼</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 可用套件 sklearn.metrics 的 auc</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">auc</span>(<span class="params">fpr, tpr</span>):</span><br><span class="line">    auc_value = <span class="number">0.0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="built_in">len</span>(fpr)):</span><br><span class="line">        auc_value += (fpr[i] - fpr[i - <span class="number">1</span>]) * (tpr[i] + tpr[i - <span class="number">1</span>]) / <span class="number">2</span></span><br><span class="line">    <span class="keyword">return</span> auc_value</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可用套件 sklearn.metrics 的 roc_curve</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">roc_curve</span>(<span class="params">y_true, y_score</span>):</span><br><span class="line">    sorted_indices = <span class="built_in">sorted</span>(<span class="built_in">range</span>(<span class="built_in">len</span>(y_score)), key=<span class="keyword">lambda</span> i: y_score[i], reverse=<span class="literal">True</span>)</span><br><span class="line">    y_true_sorted = [y_true[i] <span class="keyword">for</span> i <span class="keyword">in</span> sorted_indices]</span><br><span class="line">    y_score_sorted = [y_score[i] <span class="keyword">for</span> i <span class="keyword">in</span> sorted_indices]</span><br><span class="line"></span><br><span class="line">    thresholds = <span class="built_in">sorted</span>(<span class="built_in">set</span>(y_score_sorted), reverse=<span class="literal">True</span>)</span><br><span class="line">    tpr = []</span><br><span class="line">    fpr = []</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 計算每個閾值下的 TPR 和 FPR</span></span><br><span class="line">    <span class="keyword">for</span> threshold <span class="keyword">in</span> thresholds:</span><br><span class="line">        <span class="comment"># 根據閾值預測標籤</span></span><br><span class="line">        y_pred = [<span class="number">1</span> <span class="keyword">if</span> score &gt;= threshold <span class="keyword">else</span> <span class="number">0</span> <span class="keyword">for</span> score <span class="keyword">in</span> y_score_sorted]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 計算TPR和FPR</span></span><br><span class="line">        tp = <span class="built_in">sum</span>(<span class="number">1</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(y_true_sorted)) <span class="keyword">if</span> y_true_sorted[i] == <span class="number">1</span> <span class="keyword">and</span> y_pred[i] == <span class="number">1</span>)</span><br><span class="line">        fp = <span class="built_in">sum</span>(<span class="number">1</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(y_true_sorted)) <span class="keyword">if</span> y_true_sorted[i] == <span class="number">0</span> <span class="keyword">and</span> y_pred[i] == <span class="number">1</span>)</span><br><span class="line">        fn = <span class="built_in">sum</span>(<span class="number">1</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(y_true_sorted)) <span class="keyword">if</span> y_true_sorted[i] == <span class="number">1</span> <span class="keyword">and</span> y_pred[i] == <span class="number">0</span>)</span><br><span class="line">        tn = <span class="built_in">sum</span>(<span class="number">1</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(y_true_sorted)) <span class="keyword">if</span> y_true_sorted[i] == <span class="number">0</span> <span class="keyword">and</span> y_pred[i] == <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        tpr.append(tp / (tp + fn) <span class="keyword">if</span> (tp + fn) &gt; <span class="number">0</span> <span class="keyword">else</span> <span class="number">0</span>)</span><br><span class="line">        fpr.append(fp / (fp + tn) <span class="keyword">if</span> (fp + tn) &gt; <span class="number">0</span> <span class="keyword">else</span> <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> fpr, tpr, thresholds</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    <span class="comment"># 實際標籤和模型輸出機率</span></span><br><span class="line">    y_true = [<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>]</span><br><span class="line">    y_score = [<span class="number">0.9</span>, <span class="number">0.8</span>, <span class="number">0.6</span>, <span class="number">0.1</span>, <span class="number">0.4</span>, <span class="number">0.7</span>, <span class="number">0.8</span>, <span class="number">0.7</span>, <span class="number">0.6</span>, <span class="number">0.9</span>]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 計算 ROC 曲線</span></span><br><span class="line">    fpr, tpr, thresholds = roc_curve(y_true, y_score)</span><br><span class="line">    roc_auc = auc(fpr, tpr)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 畫圖</span></span><br><span class="line">    plt.figure(figsize=(<span class="number">8</span>, <span class="number">6</span>))</span><br><span class="line">    plt.plot(fpr, tpr, color=<span class="string">&#x27;darkorange&#x27;</span>, lw=<span class="number">2</span>, label=<span class="string">f&#x27;ROC curve (AUC = <span class="subst">&#123;roc_auc:<span class="number">.2</span>f&#125;</span>)&#x27;</span>)</span><br><span class="line">    plt.plot([<span class="number">0</span>, <span class="number">1</span>], [<span class="number">0</span>, <span class="number">1</span>], color=<span class="string">&#x27;gray&#x27;</span>, lw=<span class="number">1</span>, linestyle=<span class="string">&#x27;--&#x27;</span>, label=<span class="string">&#x27;Random classifier&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> x, y, t <span class="keyword">in</span> <span class="built_in">zip</span>(fpr, tpr, thresholds):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;Threshold: <span class="subst">&#123;t:<span class="number">.2</span>f&#125;</span>, FPR: <span class="subst">&#123;x:<span class="number">.2</span>f&#125;</span>, TPR: <span class="subst">&#123;y:<span class="number">.2</span>f&#125;</span>&#x27;</span>)</span><br><span class="line">        plt.text(x, y, <span class="string">f&#x27;(<span class="subst">&#123;x:<span class="number">.2</span>f&#125;</span>, <span class="subst">&#123;y:<span class="number">.2</span>f&#125;</span>)&#x27;</span>, fontsize=<span class="number">10</span>, ha=<span class="string">&#x27;right&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    plt.xlim([<span class="number">0.0</span>, <span class="number">1.0</span>])</span><br><span class="line">    plt.ylim([<span class="number">0.0</span>, <span class="number">1.05</span>])</span><br><span class="line">    plt.xlabel(<span class="string">&#x27;False Positive Rate&#x27;</span>)</span><br><span class="line">    plt.ylabel(<span class="string">&#x27;True Positive Rate&#x27;</span>)</span><br><span class="line">    plt.title(<span class="string">&#x27;ROC Curve&#x27;</span>)</span><br><span class="line">    plt.legend(loc=<span class="string">&#x27;lower right&#x27;</span>)</span><br><span class="line">    plt.grid(<span class="literal">True</span>)</span><br><span class="line">    plt.tight_layout()</span><br><span class="line">    plt.savefig(<span class="string">&#x27;roc_curve.png&#x27;</span>, dpi=<span class="number">300</span>)</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+<h2 id="延伸議題-accuracy-與-roc-哪個比較能代表模型性能"><a class="markdownIt-Anchor" href="#延伸議題-accuracy-與-roc-哪個比較能代表模型性能"></a> [延伸議題] Accuracy 與 ROC 哪個比較能代表模型性能？</h2>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%B8%E7%BF%92-%E6%8C%87%E6%A8%99/" rel="tag"># 深度學習 指標</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/05/01/deep-learning/2025-05-01-1x1%E5%8D%B7%E7%A9%8D%E4%BB%8B%E7%B4%B9/" rel="prev" title="1x1 卷積層介紹">
+                  <i class="fa fa-angle-left"></i> 1x1 卷積層介紹
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/" rel="next" title="2025-07-16-多執行緒資源載入問題修復紀錄">
+                  2025-07-16-多執行緒資源載入問題修復紀錄 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder"><a target="_blank" rel="noopener" href='https://github.com/j84637587'>SpicyRat</a></span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 強力驅動
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="回到頂端">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"j84637587","repo":"j84637587.github.io","client_id":"Ov23liRrHEp1XYs7VMgQ","client_secret":"3b725b79e5f9b528ef1baad6a89305d024743dbc","admin_user":"j84637587","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-TW","body":null,"labels":"Gitalk","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"f72286309700ab7ed40ce205c3372149"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>

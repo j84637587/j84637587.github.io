@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"j84637587.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜尋...","empty":"我們無法找到任何有關 ${query} 的搜索結果","hits_time":"找到 ${hits} 個搜索結果（用時 ${time} 毫秒）","hits":"找到 ${hits} 個搜索結果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="嘗試把開發的遊戲做邏輯與渲染分離，具體來說就是在主執行緒只執行邏輯運算，並額外建立一個渲染執行緒專門做渲染。 雖然聽起來很簡單，但碰到執行緒任何事情就會難上很多… 這次遇到的就是實作了上述內容後，打字發生了某些字(V和a)可以顯示，但部分字是沒載入資源的情況，如下圖（請忽略顏色問題，後續會額外出一篇解決紀錄）：  一開始以為是 FreeType 出現問題，但發現遊戲版本(Ver. a1.0.1 測">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2025-07-16-多執行緒資源載入問題修復紀錄">
+<meta property="og:url" content="https://j84637587.github.io/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/index.html">
+<meta property="og:site_name" content="SpicyRat&#39;s Engineer Journey">
+<meta property="og:description" content="嘗試把開發的遊戲做邏輯與渲染分離，具體來說就是在主執行緒只執行邏輯運算，並額外建立一個渲染執行緒專門做渲染。 雖然聽起來很簡單，但碰到執行緒任何事情就會難上很多… 這次遇到的就是實作了上述內容後，打字發生了某些字(V和a)可以顯示，但部分字是沒載入資源的情況，如下圖（請忽略顏色問題，後續會額外出一篇解決紀錄）：  一開始以為是 FreeType 出現問題，但發現遊戲版本(Ver. a1.0.1 測">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:image" content="https://j84637587.github.io/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/resource_not_load.png">
+<meta property="og:image" content="https://j84637587.github.io/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/game_version.png">
+<meta property="og:image" content="https://j84637587.github.io/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/result.png">
+<meta property="article:published_time" content="2025-07-16T08:10:44.000Z">
+<meta property="article:modified_time" content="2026-03-10T12:43:43.044Z">
+<meta property="article:author" content="SpicyRat">
+<meta property="article:tag" content="glfw OpenGL FreeType">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://j84637587.github.io/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/resource_not_load.png">
+
+
+<link rel="canonical" href="https://j84637587.github.io/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-TW","comments":true,"permalink":"https://j84637587.github.io/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/","path":"2025/07/16/programming/2025-07-16-多執行緒資源載入問題修復紀錄/","title":"2025-07-16-多執行緒資源載入問題修復紀錄"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2025-07-16-多執行緒資源載入問題修復紀錄 | SpicyRat's Engineer Journey</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SpicyRat's Engineer Journey</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜尋" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>關於</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分類</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">SpicyRat</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://j84637587.github.io/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="SpicyRat">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2025-07-16-多執行緒資源載入問題修復紀錄 | SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2025-07-16-多執行緒資源載入問題修復紀錄
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">發表於</span>
+
+      <time title="創建時間：2025-07-16 16:10:44" itemprop="dateCreated datePublished" datetime="2025-07-16T16:10:44+08:00">2025-07-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新於</span>
+      <time title="修改時間：2026-03-10 20:43:43" itemprop="dateModified" datetime="2026-03-10T20:43:43+08:00">2026-03-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>嘗試把開發的遊戲做<code>邏輯</code>與<code>渲染</code>分離，具體來說就是在主執行緒只執行邏輯運算，並額外建立一個渲染執行緒專門做渲染。</p>
+<p>雖然聽起來很簡單，但碰到執行緒任何事情就會難上很多…</p>
+<p>這次遇到的就是實作了上述內容後，打字發生了某些字(<code>V</code>和<code>a</code>)可以顯示，但部分字是沒載入資源的情況，如下圖（請忽略顏色問題，後續會額外出一篇解決紀錄）：</p>
+<img src="/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/resource_not_load.png" class="" title="字型沒載入">
+<p>一開始以為是 FreeType 出現問題，但發現遊戲版本(<code>Ver. a1.0.1 測試版</code>)的字體是可以完整顯示的：</p>
+<img src="/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/game_version.png" class="" title="遊戲版本">
+<p>最後發現其實是資源載入的問題。</p>
+<p>在GLFW中，是由Context來管理建立的圖形資源，但GLFW的Context並非是Thread-safe的，每個Thread只能有自己的Context且同時間一個Context只能被一個Thread所使用。<strong>可以透過<code>glfwMakeContextCurrent</code>來移動Context。</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">glfwMakeContextCurrent</span>(_context); <span class="comment">// 綁定當前Thread使用_context</span></span><br><span class="line"><span class="built_in">glfwMakeContextCurrent</span>(<span class="literal">NULL</span>); <span class="comment">// 取消當前Thread的Context綁定</span></span><br></pre></td></tr></table></figure>
+<p>上面敘述代表說，連同資源的載入也必須一同在渲染執行緒中執行，而遊戲版本可以正常渲染就是因為我在渲染執行緒中的初始化有包含到遊戲版本，因而可以正常渲染。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Error <span class="title">initGraphics</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (Error error = GraphicsGL::<span class="built_in">get</span>().<span class="built_in">loadFonts</span>()) &#123;</span><br><span class="line">    <span class="keyword">return</span> error;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  UI::<span class="built_in">get</span>().<span class="built_in">init</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但也衍伸出一個問題，我的UI顯示邏輯與資源的載入是放一起的，導致很難去做區隔。為了解決這個問題我通過建立一個資源管理類別，通過使用一個Queue在主執行緒保存要載入函式，並延遲到渲染執行緒中進行載入。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">pragma</span> once</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;atomic&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ResourceManager</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> LoadTask = std::function&lt;<span class="built_in">void</span>()&gt;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 主執行緒呼叫：請求載入資源</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">requestLoad</span><span class="params">(LoadTask task)</span> </span>&#123;</span><br><span class="line">        <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">lock</span><span class="params">(queue_mutex_)</span></span>;</span><br><span class="line">        load_queue_.<span class="built_in">push</span>(task);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 渲染執行緒呼叫：處理所有等待中的載入請求</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">processLoadRequests</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">lock</span><span class="params">(queue_mutex_)</span></span>;</span><br><span class="line">        <span class="keyword">while</span> (!load_queue_.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">            <span class="keyword">auto</span> task = load_queue_.<span class="built_in">front</span>();</span><br><span class="line">            load_queue_.<span class="built_in">pop</span>();</span><br><span class="line">            <span class="built_in">task</span>(); <span class="comment">// 在渲染執行緒中執行載入</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    std::queue&lt;LoadTask&gt; load_queue_;</span><br><span class="line">    std::mutex queue_mutex_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>透過這個方式，字體就可以動態載入了：</p>
+<img src="/2025/07/16/programming/2025-07-16-%E5%A4%9A%E5%9F%B7%E8%A1%8C%E7%B7%92%E8%B3%87%E6%BA%90%E8%BC%89%E5%85%A5%E5%95%8F%E9%A1%8C%E4%BF%AE%E5%BE%A9%E7%B4%80%E9%8C%84/result.png" class="" title="結果">
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/glfw-OpenGL-FreeType/" rel="tag"># glfw OpenGL FreeType</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/07/09/machine-learning/2025-07-09-ROC%E6%9B%B2%E7%B7%9A/" rel="prev" title="ROC曲線詳解-機器學習模型評估的重要指標">
+                  <i class="fa fa-angle-left"></i> ROC曲線詳解-機器學習模型評估的重要指標
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2025/07/20/programming/2025-07-20-Java-Maven-Protobuf-%E7%89%88%E6%9C%AC%E5%95%8F%E9%A1%8C/" rel="next" title="2025-07-20-Java Maven Protobuf 版本問題">
+                  2025-07-20-Java Maven Protobuf 版本問題 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder"><a target="_blank" rel="noopener" href='https://github.com/j84637587'>SpicyRat</a></span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 強力驅動
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="回到頂端">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"j84637587","repo":"j84637587.github.io","client_id":"Ov23liRrHEp1XYs7VMgQ","client_secret":"3b725b79e5f9b528ef1baad6a89305d024743dbc","admin_user":"j84637587","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-TW","body":null,"labels":"Gitalk","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"df8e341149a7a3ba3d8f0ab662e1b3b1"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>
