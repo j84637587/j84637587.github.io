@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"j84637587.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜尋...","empty":"我們無法找到任何有關 ${query} 的搜索結果","hits_time":"找到 ${hits} 個搜索結果（用時 ${time} 毫秒）","hits":"找到 ${hits} 個搜索結果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="因為本人最近在求職，需要複習相關RTOS知識，所以整理了一些筆記，方便自己複習，也希望對其他人有幫助。  延續上篇 (Part3)，我們在上篇文章作了以下事情，接著將進一步去做延伸。 Part3：  update_interval_ms 可設定，預設 1000 ms 多了 .unlocked_ioctl user-space 程式可透過 ioctl() 設定更新間隔 多了 virtual_sen">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2026-08-05-RTOS複習 Part4">
+<meta property="og:url" content="https://j84637587.github.io/2026/08/05/programming/RTOS/2026-08-05-RTOS%E8%A4%87%E7%BF%92%20Part4/index.html">
+<meta property="og:site_name" content="SpicyRat&#39;s Engineer Journey">
+<meta property="og:description" content="因為本人最近在求職，需要複習相關RTOS知識，所以整理了一些筆記，方便自己複習，也希望對其他人有幫助。  延續上篇 (Part3)，我們在上篇文章作了以下事情，接著將進一步去做延伸。 Part3：  update_interval_ms 可設定，預設 1000 ms 多了 .unlocked_ioctl user-space 程式可透過 ioctl() 設定更新間隔 多了 virtual_sen">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2026-08-05T04:10:44.000Z">
+<meta property="article:modified_time" content="2026-08-15T21:30:31.542Z">
+<meta property="article:author" content="SpicyRat">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="RTOS">
+<meta property="article:tag" content="WSL">
+<meta property="article:tag" content="EmbeddedSystem">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://j84637587.github.io/2026/08/05/programming/RTOS/2026-08-05-RTOS%E8%A4%87%E7%BF%92%20Part4/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-TW","comments":true,"permalink":"https://j84637587.github.io/2026/08/05/programming/RTOS/2026-08-05-RTOS%E8%A4%87%E7%BF%92%20Part4/","path":"2026/08/05/programming/RTOS/2026-08-05-RTOS複習 Part4/","title":"2026-08-05-RTOS複習 Part4"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2026-08-05-RTOS複習 Part4 | SpicyRat's Engineer Journey</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SpicyRat's Engineer Journey</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜尋" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>關於</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分類</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%AE%E6%A8%99"><span class="nav-number">1.</span> <span class="nav-text"> 目標</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#requirements"><span class="nav-number">2.</span> <span class="nav-text"> Requirements</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BC%8F%E7%A2%BC"><span class="nav-number">3.</span> <span class="nav-text"> 程式碼</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%AC%E8%A9%A6"><span class="nav-number">4.</span> <span class="nav-text"> 測試</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">SpicyRat</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://j84637587.github.io/2026/08/05/programming/RTOS/2026-08-05-RTOS%E8%A4%87%E7%BF%92%20Part4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="SpicyRat">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2026-08-05-RTOS複習 Part4 | SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2026-08-05-RTOS複習 Part4
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">發表於</span>
+
+      <time title="創建時間：2026-08-05 12:10:44" itemprop="dateCreated datePublished" datetime="2026-08-05T12:10:44+08:00">2026-08-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新於</span>
+      <time title="修改時間：2026-08-16 05:30:31" itemprop="dateModified" datetime="2026-08-16T05:30:31+08:00">2026-08-16</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>因為本人最近在求職，需要複習相關RTOS知識，所以整理了一些筆記，方便自己複習，也希望對其他人有幫助。</p>
+</blockquote>
+<p>延續上篇 (<a href="2026-08-02-RTOS%E8%A4%87%E7%BF%92%20Part3.md">Part3</a>)，我們在上篇文章作了以下事情，接著將進一步去做延伸。</p>
+<p>Part3：</p>
+<ul>
+<li>update_interval_ms 可設定，預設 1000 ms</li>
+<li>多了 .unlocked_ioctl</li>
+<li>user-space 程式可透過 ioctl() 設定更新間隔</li>
+<li>多了 virtual_sensor_ioctl() 接收設定命令</li>
+<li>加了 spinlock 保護溫度、方向與更新間隔</li>
+</ul>
+<h2 id="目標"><a class="markdownIt-Anchor" href="#目標"></a> 目標</h2>
+<p>既然我們已經有了模擬溫度感測器的 kernel module，並且可以透過 ioctl() 設定更新間隔，那麼接下來我們要做的是：將它註冊為 hwmon 感測器，讓 user-space 能透過標準的 sysfs 介面讀取溫度。</p>
+<p>註冊為 hwmon 感測器，是為了讓 Linux 與上層軟體把它視為「標準硬體監控感測器」，而不是自訂的 /dev/virtual_sensor。</p>
+<blockquote>
+<p>hwmon 是 Linux 的一個子系統，提供了統一的介面來讀取硬體監控感測器的資料，例如溫度、電壓、風扇轉速等。透過 hwmon，使用者程式可以不需要知道底層硬體的細節，就能讀取感測器資料。</p>
+</blockquote>
+<p>與我們當前的差異是?</p>
+<ul>
+<li>目前： 你的程式必須知道 /dev/virtual_sensor 和自訂 ioctl 規格</li>
+<li>hwmon：任何支援 Linux hwmon 的工具或服務，都能用標準方式讀溫度</li>
+</ul>
+<h2 id="requirements"><a class="markdownIt-Anchor" href="#requirements"></a> Requirements</h2>
+<p>在實作前要先確認 kernel config 有開啟 hwmon 支援。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep <span class="string">&#x27;^CONFIG_HWMON=&#x27;</span> ~/buildroot/output/build/linux-6.18.7/.config   <span class="comment"># 預期出現 CONFIG_HWMON=y 或 CONFIG_HWMON=m</span></span><br></pre></td></tr></table></figure>
+<h2 id="程式碼"><a class="markdownIt-Anchor" href="#程式碼"></a> 程式碼</h2>
+<p>修改 <code>virtual_sensor.c</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/atomic.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/fs.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/init.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/jiffies.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/kernel.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/miscdevice.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/spinlock.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/timer.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/uaccess.h&gt;</span></span></span><br><span class="line"><span class="comment">// 增加 hwmon 支援</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/err.h&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/hwmon.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;virtual_sensor_ioctl.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">atomic_t</span> temperature = ATOMIC_INIT(<span class="number">210</span>);</span><br><span class="line"><span class="type">static</span> <span class="type">int</span> temperature_step = <span class="number">1</span>;</span><br><span class="line"><span class="type">static</span> <span class="type">unsigned</span> <span class="type">int</span> update_interval_ms = <span class="number">1000</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">timer_list</span> <span class="title">temperature_timer</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">device</span> *<span class="title">virtual_sensor_hwmon_device</span>;</span> <span class="comment">// hwmon device</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="title function_">DEFINE_SPINLOCK</span><span class="params">(sensor_lock)</span>; <span class="comment">// timer callback 不能 sleep，因此用 spinlock，不用 mutex</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">virtual_sensor_update</span><span class="params">(<span class="keyword">struct</span> timer_list *timer)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> flags;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> interval_ms;</span><br><span class="line">    <span class="type">int</span> current_temperature;</span><br><span class="line"></span><br><span class="line">    spin_lock_irqsave(&amp;sensor_lock, flags);</span><br><span class="line"></span><br><span class="line">    current_temperature = <span class="type">atomic_read</span>(&amp;temperature);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (current_temperature &gt;= <span class="number">220</span>)</span><br><span class="line">        temperature_step = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (current_temperature &lt;= <span class="number">210</span>)</span><br><span class="line">        temperature_step = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="type">atomic_add</span>(temperature_step, &amp;temperature);</span><br><span class="line">    interval_ms = update_interval_ms;</span><br><span class="line"></span><br><span class="line">    spin_unlock_irqrestore(&amp;sensor_lock, flags);</span><br><span class="line"></span><br><span class="line">    mod_timer(timer, jiffies + msecs_to_jiffies(interval_ms));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">ssize_t</span> <span class="title function_">virtual_sensor_read</span><span class="params">(</span></span><br><span class="line"><span class="params">    <span class="keyword">struct</span> file *file, <span class="type">char</span> __user *buffer, <span class="type">size_t</span> count, <span class="type">loff_t</span> *offset)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> flags;</span><br><span class="line">    <span class="type">char</span> message[<span class="number">32</span>];</span><br><span class="line">    <span class="type">int</span> current_temperature;</span><br><span class="line">    <span class="type">int</span> length;</span><br><span class="line"></span><br><span class="line">    (<span class="type">void</span>)file;</span><br><span class="line"></span><br><span class="line">    spin_lock_irqsave(&amp;sensor_lock, flags);</span><br><span class="line">    current_temperature = <span class="type">atomic_read</span>(&amp;temperature);</span><br><span class="line">    spin_unlock_irqrestore(&amp;sensor_lock, flags);</span><br><span class="line"></span><br><span class="line">    length = scnprintf(</span><br><span class="line">        message, <span class="keyword">sizeof</span>(message), <span class="string">&quot;temperature=%d.%d C\n&quot;</span>,</span><br><span class="line">        current_temperature / <span class="number">10</span>, current_temperature % <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> simple_read_from_buffer(buffer, count, offset, message, length);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">long</span> <span class="title function_">virtual_sensor_ioctl</span><span class="params">(</span></span><br><span class="line"><span class="params">    <span class="keyword">struct</span> file *file, <span class="type">unsigned</span> <span class="type">int</span> command, <span class="type">unsigned</span> <span class="type">long</span> argument)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> flags;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> interval_ms;</span><br><span class="line"></span><br><span class="line">    (<span class="type">void</span>)file;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 不認得的命令，回傳「不支援此 ioctl」。</span></span><br><span class="line">    <span class="keyword">if</span> (command != VIRTUAL_SENSOR_SET_INTERVAL_MS)</span><br><span class="line">        <span class="keyword">return</span> -ENOTTY;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 從 user space 複製新的更新間隔</span></span><br><span class="line">    <span class="keyword">if</span> (copy_from_user(&amp;interval_ms, (<span class="type">void</span> __user *)argument,</span><br><span class="line">                       <span class="keyword">sizeof</span>(interval_ms)))</span><br><span class="line">        <span class="keyword">return</span> -EFAULT;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 限制可接受範圍為 100 ms 到 10 秒</span></span><br><span class="line">    <span class="keyword">if</span> (interval_ms &lt; <span class="number">100</span> || interval_ms &gt; <span class="number">10000</span>)</span><br><span class="line">        <span class="keyword">return</span> -EINVAL;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 取消舊 timer，並等待正在執行的 callback 結束</span></span><br><span class="line">    timer_delete_sync(&amp;temperature_timer);</span><br><span class="line"></span><br><span class="line">    spin_lock_irqsave(&amp;sensor_lock, flags);</span><br><span class="line">    update_interval_ms = interval_ms;</span><br><span class="line">    spin_unlock_irqrestore(&amp;sensor_lock, flags);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 以新間隔重新啟動</span></span><br><span class="line">    mod_timer(&amp;temperature_timer,</span><br><span class="line">              jiffies + msecs_to_jiffies(interval_ms));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// hwmon 相關函式</span></span><br><span class="line"><span class="type">static</span> <span class="type">umode_t</span> <span class="title function_">virtual_sensor_hwmon_is_visible</span><span class="params">(</span></span><br><span class="line"><span class="params">    <span class="type">const</span> <span class="type">void</span> *data, <span class="keyword">enum</span> hwmon_sensor_types type, u32 attr, <span class="type">int</span> channel)</span></span><br><span class="line">&#123;</span><br><span class="line">    (<span class="type">void</span>)data;</span><br><span class="line">    (<span class="type">void</span>)channel;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (type == hwmon_temp &amp;&amp; attr == hwmon_temp_input)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0444</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// hwmon 讀取 temp1_input 時，會呼叫這個函式。</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">virtual_sensor_hwmon_read</span><span class="params">(</span></span><br><span class="line"><span class="params">    <span class="keyword">struct</span> device *device, <span class="keyword">enum</span> hwmon_sensor_types type,</span></span><br><span class="line"><span class="params">    u32 attr, <span class="type">int</span> channel, <span class="type">long</span> *value)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">long</span> flags;</span><br><span class="line">    <span class="type">int</span> current_temperature;</span><br><span class="line"></span><br><span class="line">    (<span class="type">void</span>)device;</span><br><span class="line">    (<span class="type">void</span>)channel;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (type != hwmon_temp || attr != hwmon_temp_input)</span><br><span class="line">        <span class="keyword">return</span> -EOPNOTSUPP;</span><br><span class="line"></span><br><span class="line">    spin_lock_irqsave(&amp;sensor_lock, flags);</span><br><span class="line">    current_temperature = <span class="type">atomic_read</span>(&amp;temperature);</span><br><span class="line">    spin_unlock_irqrestore(&amp;sensor_lock, flags);</span><br><span class="line"></span><br><span class="line">    *value = (<span class="type">long</span>)current_temperature * <span class="number">100</span>;</span><br><span class="line">    <span class="comment">/* 內部 210 = 21.0°C；hwmon 使用毫攝氏度，所以回傳 21000。 */</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// hwmon_channel_info 結構，描述這個 hwmon 裝置的 channel 與屬性</span></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">hwmon_channel_info</span> * <span class="title">const</span> <span class="title">virtual_sensor_hwmon_info</span>[] =</span> &#123;</span><br><span class="line">    HWMON_CHANNEL_INFO(temp, HWMON_T_INPUT),</span><br><span class="line">    <span class="literal">NULL</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// hwmon_ops 結構，描述這個 hwmon 裝置的操作函式</span></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">hwmon_ops</span> <span class="title">virtual_sensor_hwmon_ops</span> =</span> &#123;</span><br><span class="line">    .is_visible = virtual_sensor_hwmon_is_visible,</span><br><span class="line">    .read = virtual_sensor_hwmon_read,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// hwmon_chip_info 結構，描述這個 hwmon 裝置的資訊</span></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">hwmon_chip_info</span> <span class="title">virtual_sensor_hwmon_chip_info</span> =</span> &#123;</span><br><span class="line">    .ops = &amp;virtual_sensor_hwmon_ops,</span><br><span class="line">    .info = virtual_sensor_hwmon_info,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">virtual_sensor_fops</span> =</span> &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .read = virtual_sensor_read,</span><br><span class="line">    .unlocked_ioctl = virtual_sensor_ioctl,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">miscdevice</span> <span class="title">virtual_sensor_device</span> =</span> &#123;</span><br><span class="line">    .minor = MISC_DYNAMIC_MINOR,</span><br><span class="line">    .name = <span class="string">&quot;virtual_sensor&quot;</span>,</span><br><span class="line">    .fops = &amp;virtual_sensor_fops,</span><br><span class="line">    .mode = <span class="number">0444</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> __init <span class="title function_">virtual_sensor_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> result = misc_register(&amp;virtual_sensor_device);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (result != <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 註冊 hwmon 裝置</span></span><br><span class="line">    virtual_sensor_hwmon_device = hwmon_device_register_with_info(</span><br><span class="line">        virtual_sensor_device.this_device,</span><br><span class="line">        <span class="string">&quot;virtual_sensor&quot;</span>,</span><br><span class="line">        <span class="literal">NULL</span>,</span><br><span class="line">        &amp;virtual_sensor_hwmon_chip_info,</span><br><span class="line">        <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果註冊 hwmon 裝置失敗，取消 misc device 註冊並回傳錯誤碼</span></span><br><span class="line">    <span class="keyword">if</span> (IS_ERR(virtual_sensor_hwmon_device)) &#123;</span><br><span class="line">        result = PTR_ERR(virtual_sensor_hwmon_device);</span><br><span class="line">        misc_deregister(&amp;virtual_sensor_device);</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    timer_setup(&amp;temperature_timer, virtual_sensor_update, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    mod_timer(&amp;temperature_timer, jiffies + HZ);</span><br><span class="line"></span><br><span class="line">    pr_info(<span class="string">&quot;virtual_sensor: loaded\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> __exit <span class="title function_">virtual_sensor_exit</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    hwmon_device_unregister(virtual_sensor_hwmon_device); <span class="comment">// 取消 hwmon 裝置註冊</span></span><br><span class="line">    timer_delete_sync(&amp;temperature_timer);</span><br><span class="line">    misc_deregister(&amp;virtual_sensor_device);</span><br><span class="line"></span><br><span class="line">    pr_info(<span class="string">&quot;virtual_sensor: unloaded\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(virtual_sensor_init);</span><br><span class="line">module_exit(virtual_sensor_exit);</span><br><span class="line"></span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br><span class="line">MODULE_DESCRIPTION(<span class="string">&quot;A virtual temperature sensor with configurable interval&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>重新編譯 .ko、複製到 overlay、make、開 QEMU、insmod</p>
+<h2 id="測試"><a class="markdownIt-Anchor" href="#測試"></a> 測試</h2>
+<p>然後透過這個 image 來啟動 QEMU，並在 QEMU 中載入模組。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">insmod /lib/modules/virtual_sensor.ko <span class="comment"># 載入模組</span></span><br><span class="line">sensor_ctl 500 <span class="comment"># 設定更新間隔為 500 ms</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 每隔一秒讀一次時，溫度大約應改變 0.2°C，表示 timer 已由預設 1 秒成功改為 500 ms。</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> 1 2 3 4 5; <span class="keyword">do</span></span><br><span class="line">    <span class="built_in">cat</span> /dev/virtual_sensor</span><br><span class="line">    <span class="built_in">sleep</span> 1</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/RTOS/" rel="tag"># RTOS</a>
+              <a href="/tags/WSL/" rel="tag"># WSL</a>
+              <a href="/tags/EmbeddedSystem/" rel="tag"># EmbeddedSystem</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/02/programming/RTOS/2026-08-02-RTOS%E8%A4%87%E7%BF%92%20Part3/" rel="prev" title="2026-08-02-RTOS複習 Part3">
+                  <i class="fa fa-angle-left"></i> 2026-08-02-RTOS複習 Part3
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/06/programming/RTOS/2026-08-06-RTOS%E8%A4%87%E7%BF%92%20Part5/" rel="next" title="2026-08-06-RTOS複習 Part5">
+                  2026-08-06-RTOS複習 Part5 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder"><a target="_blank" rel="noopener" href='https://github.com/j84637587'>SpicyRat</a></span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 強力驅動
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="回到頂端">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"j84637587","repo":"j84637587.github.io","client_id":"Ov23liRrHEp1XYs7VMgQ","client_secret":"3b725b79e5f9b528ef1baad6a89305d024743dbc","admin_user":"j84637587","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-TW","body":null,"labels":"Gitalk","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"1dd62842e66a8d02af5454a952807c1c"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>
