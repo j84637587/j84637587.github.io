@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"j84637587.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜尋...","empty":"我們無法找到任何有關 ${query} 的搜索結果","hits_time":"找到 ${hits} 個搜索結果（用時 ${time} 毫秒）","hits":"找到 ${hits} 個搜索結果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="2026-08-10-BMC學習 Part3  本人最近在求職，想要玩 BMC 相關職涯領域發展，但以前只有嵌入式的知識，所以嘗試學習，並同步整理筆記，方便自己記錄學習，也希望對其他人有幫助。  延續上篇 (Part2)，我們在上篇文章作了以下事情，接著將進一步去做延伸。 這篇先接觸些相關 Sensor 的操作，並且透過 D-Bus 來查詢系統裡有哪些感測器數值。  查詢系統裡有哪些感測器數值">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2026-08-10-BMC學習 Part2">
+<meta property="og:url" content="https://j84637587.github.io/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part2/index.html">
+<meta property="og:site_name" content="SpicyRat&#39;s Engineer Journey">
+<meta property="og:description" content="2026-08-10-BMC學習 Part3  本人最近在求職，想要玩 BMC 相關職涯領域發展，但以前只有嵌入式的知識，所以嘗試學習，並同步整理筆記，方便自己記錄學習，也希望對其他人有幫助。  延續上篇 (Part2)，我們在上篇文章作了以下事情，接著將進一步去做延伸。 這篇先接觸些相關 Sensor 的操作，並且透過 D-Bus 來查詢系統裡有哪些感測器數值。  查詢系統裡有哪些感測器數值">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2026-08-10T09:15:23.000Z">
+<meta property="article:modified_time" content="2026-08-25T14:05:14.311Z">
+<meta property="article:author" content="SpicyRat">
+<meta property="article:tag" content="BMC">
+<meta property="article:tag" content="OpenBMC">
+<meta property="article:tag" content="Embedded">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Yocto">
+<meta property="article:tag" content="D-Bus">
+<meta property="article:tag" content="Sensor">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://j84637587.github.io/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part2/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-TW","comments":true,"permalink":"https://j84637587.github.io/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part2/","path":"2026/08/10/programming/BMC/2026-08-10-BMC學習-Part2/","title":"2026-08-10-BMC學習 Part2"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2026-08-10-BMC學習 Part2 | SpicyRat's Engineer Journey</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SpicyRat's Engineer Journey</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜尋" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>關於</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分類</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#2026-08-10-bmc%E5%AD%B8%E7%BF%92-part3"><span class="nav-number">1.</span> <span class="nav-text"> 2026-08-10-BMC學習 Part3</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%A9%A2%E7%B3%BB%E7%B5%B1%E8%A3%A1%E6%9C%89%E5%93%AA%E4%BA%9B%E6%84%9F%E6%B8%AC%E5%99%A8%E6%95%B8%E5%80%BC"><span class="nav-number">1.1.</span> <span class="nav-text"> 查詢系統裡有哪些感測器數值</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">SpicyRat</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://j84637587.github.io/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="SpicyRat">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2026-08-10-BMC學習 Part2 | SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2026-08-10-BMC學習 Part2
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">發表於</span>
+
+      <time title="創建時間：2026-08-10 17:15:23" itemprop="dateCreated datePublished" datetime="2026-08-10T17:15:23+08:00">2026-08-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新於</span>
+      <time title="修改時間：2026-08-25 22:05:14" itemprop="dateModified" datetime="2026-08-25T22:05:14+08:00">2026-08-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="2026-08-10-bmc學習-part3"><a class="markdownIt-Anchor" href="#2026-08-10-bmc學習-part3"></a> 2026-08-10-BMC學習 Part3</h1>
+<blockquote>
+<p>本人最近在求職，想要玩 BMC 相關職涯領域發展，但以前只有嵌入式的知識，所以嘗試學習，並同步整理筆記，方便自己記錄學習，也希望對其他人有幫助。</p>
+</blockquote>
+<p>延續上篇 (<a href="2026-08-09-BMC%E5%AD%B8%E7%BF%92-Part1.md">Part2</a>)，我們在上篇文章作了以下事情，接著將進一步去做延伸。</p>
+<p>這篇先接觸些相關 Sensor 的操作，並且透過 D-Bus 來查詢系統裡有哪些感測器數值。</p>
+<h2 id="查詢系統裡有哪些感測器數值"><a class="markdownIt-Anchor" href="#查詢系統裡有哪些感測器數值"></a> 查詢系統裡有哪些感測器數值</h2>
+<p>這個指令是透過 D-Bus 向 OpenBMC 的 Object Mapper 查詢：「系統裡哪些物件是感測器數值？」</p>
+<blockquote>
+<p>D-Bus 是一個在 Linux 系統中用來讓不同程式之間溝通的機制，OpenBMC 使用 D-Bus 來管理系統中的各種資源和服務。Object Mapper 是 OpenBMC 的一個服務，它負責管理系統中的物件和它們的介面。</p>
+</blockquote>
+<p>可以把這個指令拆開來看：</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>busctl call</td>
+<td>呼叫 D-Bus 的指令</td>
+</tr>
+<tr>
+<td>xyz.openbmc_project.ObjectMapper</td>
+<td>要呼叫的服務名稱</td>
+</tr>
+<tr>
+<td>/xyz/openbmc_project/object_mapper</td>
+<td>要呼叫的服務的 object path</td>
+</tr>
+<tr>
+<td>xyz.openbmc_project.ObjectMapper</td>
+<td>要使用的介面名稱</td>
+</tr>
+<tr>
+<td>GetSubTreePaths</td>
+<td>要呼叫的函式名稱</td>
+</tr>
+<tr>
+<td>sias</td>
+<td>參數型別：s 字串、i 整數、as 字串陣列</td>
+</tr>
+<tr>
+<td>/</td>
+<td>從 D-Bus 根目錄開始找</td>
+</tr>
+<tr>
+<td>0</td>
+<td>搜尋深度 0，代表不限深度</td>
+</tr>
+<tr>
+<td>1 xyz.openbmc_project.Sensor.Value</td>
+<td>要求介面陣列有 1 個項目，且必須包含這個感測器數值介面</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">busctl call xyz.openbmc_project.ObjectMapper \</span><br><span class="line">  /xyz/openbmc_project/object_mapper \</span><br><span class="line">  xyz.openbmc_project.ObjectMapper \</span><br><span class="line">  GetSubTreePaths sias \</span><br><span class="line">  / 0 1 xyz.openbmc_project.Sensor.Value</span><br></pre></td></tr></table></figure>
+<p>輸出會類似以下，表示系統裡有四個感測器數值物件：</p>
+<ul>
+<li>/xyz/openbmc_project/sensors/fan_tach/fan0</li>
+<li>/xyz/openbmc_project/sensors/fan_tach/fan1</li>
+<li>/xyz/openbmc_project/sensors/fan_tach/fan2</li>
+<li>/xyz/openbmc_project/sensors/voltage/vbat</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">as 4 &quot;/xyz/openbmc_project/sensors/fan_tach/fan0&quot; &quot;/xyz/openbmc_project/sensors/fan_tach/fan1&quot; &quot;/xyz/openbmc_project/sensors/fan_tach/fan2&quot; &quot;/xyz/openbmc_project/sensors/voltage/vbat&quot;</span><br></pre></td></tr></table></figure>
+<p>這裡開始會與 Arduino/Raspberry Pi 等的感測器操作有些不同，因為 BMC 的感測器數值是透過 D-Bus 來查詢的，而不是直接透過 GPIO 或 I2C 來讀取。</p>
+<p>Arduino： 溫度感測器 → 你的 .ino 程式 → Serial 印出溫度</p>
+<p>OpenBMC 溫度感測器 → Linux driver → hwmon/sysfs → sensor service → D-Bus → Web UI / Redfish / IPMI / 其他服務</p>
+<p>所以接下來我們應該先拆解一個既有 sensor，例如 vbat。查出哪個 service 擁有它</p>
+<p>這個指令跟剛剛的很像，只是 <code>GetSubTreePaths</code> 改成 <code>GetObject</code>，意思是「查詢這個物件的擁有者是誰？」</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">busctl call xyz.openbmc_project.ObjectMapper \</span><br><span class="line">  /xyz/openbmc_project/object_mapper \</span><br><span class="line">  xyz.openbmc_project.ObjectMapper \</span><br><span class="line">  GetObject sas \</span><br><span class="line">  /xyz/openbmc_project/sensors/voltage/vbat \</span><br><span class="line">  1 xyz.openbmc_project.Sensor.Value</span><br></pre></td></tr></table></figure>
+<p>輸出類似：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a&#123;sas&#125; 1 &quot;xyz.openbmc_project.Hwmon-90dc5dd3857daeb224c11f832395c5c454995ef20ee9cda4c1747f544f1f8541.Hwmon1&quot; 5 &quot;org.freedesktop.DBus.Introspectable&quot; &quot;org.freedesktop.DBus.Peer&quot; &quot;org.freedesktop.DBus.Properties&quot; &quot;xyz.openbmc_project.Sensor.Value&quot; &quot;xyz.openbmc_project.State.Decorator.OperationalStatus&quot;</span><br></pre></td></tr></table></figure>
+<p>接著用 service 名稱(<code>xyz.openbmc_project.Hwmon-90dc5dd3857daeb224c11f832395c5c454995ef20ee9cda4c1747f544f1f8541.Hwmon1</code>) 查它有哪些屬性：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">busctl introspect xyz.openbmc_project.Hwmon-90dc5dd3857daeb224c11f832395c5c454995ef20ee9cda4c1747f544f1f8541.Hwmon1 \</span><br><span class="line">  /xyz/openbmc_project/sensors/voltage/vbat</span><br></pre></td></tr></table></figure>
+<p>輸出會是一個表</p>
+<table>
+<thead>
+<tr>
+<th>NAME</th>
+<th>TYPE</th>
+<th>SIGNATURE</th>
+<th>RESULT/VALUE</th>
+<th>FLAGS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>org.freedesktop.DBus.Introspectable</td>
+<td>interface</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>.Introspect</td>
+<td>method</td>
+<td>-</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr>
+<td>org.freedesktop.DBus.Peer</td>
+<td>interface</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>.GetMachineId</td>
+<td>method</td>
+<td>-</td>
+<td>s</td>
+<td>-</td>
+</tr>
+<tr>
+<td>.Ping</td>
+<td>method</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>org.freedesktop.DBus.Properties</td>
+<td>interface</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>.Get</td>
+<td>method</td>
+<td>ss</td>
+<td>v</td>
+<td>-</td>
+</tr>
+<tr>
+<td>.GetAll</td>
+<td>method</td>
+<td>s</td>
+<td>a{sv}</td>
+<td>-</td>
+</tr>
+<tr>
+<td>.Set</td>
+<td>method</td>
+<td>ssv</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>.PropertiesChanged</td>
+<td>signal</td>
+<td>sa{sv}as</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>xyz.openbmc_project.Sensor.Value</td>
+<td>interface</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>.MaxValue</td>
+<td>property</td>
+<td>d</td>
+<td>inf</td>
+<td>emits-change writable</td>
+</tr>
+<tr>
+<td>.MinValue</td>
+<td>property</td>
+<td>d</td>
+<td>-inf</td>
+<td>emits-change writable</td>
+</tr>
+<tr>
+<td>.Unit</td>
+<td>property</td>
+<td>s</td>
+<td>xyz.openbmc_project.Sensor.Value.Unit</td>
+<td>emits-change writable</td>
+</tr>
+<tr>
+<td>.Value</td>
+<td>property</td>
+<td>d</td>
+<td>1.8765</td>
+<td>emits-change writable</td>
+</tr>
+<tr>
+<td>xyz.openbmc_project.State.Decorator.OperationalStatus</td>
+<td>interface</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>.Functional</td>
+<td>property</td>
+<td>b</td>
+<td>true</td>
+<td>emits-change writable</td>
+</tr>
+</tbody>
+</table>
+<p>然後就可以透過 D-Bus 來查詢 vbat 的數值：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">busctl get-property \</span><br><span class="line">  xyz.openbmc_project.Hwmon-90dc5dd3857daeb224c11f832395c5c454995ef20ee9cda4c1747f544f1f8541.Hwmon1 \</span><br><span class="line">  /xyz/openbmc_project/sensors/voltage/vbat \</span><br><span class="line">  xyz.openbmc_project.Sensor.Value \</span><br><span class="line">  Value</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/BMC/" rel="tag"># BMC</a>
+              <a href="/tags/OpenBMC/" rel="tag"># OpenBMC</a>
+              <a href="/tags/Embedded/" rel="tag"># Embedded</a>
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/Yocto/" rel="tag"># Yocto</a>
+              <a href="/tags/D-Bus/" rel="tag"># D-Bus</a>
+              <a href="/tags/Sensor/" rel="tag"># Sensor</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part1/" rel="prev" title="2026-08-10-BMC學習 Part1">
+                  <i class="fa fa-angle-left"></i> 2026-08-10-BMC學習 Part1
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part3/" rel="next" title="2026-08-10-BMC學習 Part3">
+                  2026-08-10-BMC學習 Part3 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder"><a target="_blank" rel="noopener" href='https://github.com/j84637587'>SpicyRat</a></span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 強力驅動
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="回到頂端">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"j84637587","repo":"j84637587.github.io","client_id":"Ov23liRrHEp1XYs7VMgQ","client_secret":"3b725b79e5f9b528ef1baad6a89305d024743dbc","admin_user":"j84637587","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-TW","body":null,"labels":"Gitalk","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"f170fb19c853e4f839686a1b38aec44b"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>

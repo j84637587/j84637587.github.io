@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"j84637587.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜尋...","empty":"我們無法找到任何有關 ${query} 的搜索結果","hits_time":"找到 ${hits} 個搜索結果（用時 ${time} 毫秒）","hits":"找到 ${hits} 個搜索結果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="因為本人最近在求職，需要複習相關RTOS知識，所以整理了一些筆記，方便自己複習，也希望對其他人有幫助。  延續上篇 (Part1)，我們在上篇文章簡單架設了環境，並測試簡單的系統啟動時自動執行的程式來簡單驗證。 接下來要接觸有關 Driver 的部分。 QEMU 可以模擬一些硬體設備，像是 UART、網路卡、SD 卡等等，這些設備都可以透過 kernel module 來操作。 因此本 Part">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2026-08-01-RTOS複習 Part2">
+<meta property="og:url" content="https://j84637587.github.io/2026/08/01/programming/RTOS/2026-08-01-RTOS%E8%A4%87%E7%BF%92%20Part2/index.html">
+<meta property="og:site_name" content="SpicyRat&#39;s Engineer Journey">
+<meta property="og:description" content="因為本人最近在求職，需要複習相關RTOS知識，所以整理了一些筆記，方便自己複習，也希望對其他人有幫助。  延續上篇 (Part1)，我們在上篇文章簡單架設了環境，並測試簡單的系統啟動時自動執行的程式來簡單驗證。 接下來要接觸有關 Driver 的部分。 QEMU 可以模擬一些硬體設備，像是 UART、網路卡、SD 卡等等，這些設備都可以透過 kernel module 來操作。 因此本 Part">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2026-08-01T08:10:44.000Z">
+<meta property="article:modified_time" content="2026-08-25T14:05:14.312Z">
+<meta property="article:author" content="SpicyRat">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="RTOS">
+<meta property="article:tag" content="WSL">
+<meta property="article:tag" content="EmbeddedSystem">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://j84637587.github.io/2026/08/01/programming/RTOS/2026-08-01-RTOS%E8%A4%87%E7%BF%92%20Part2/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-TW","comments":true,"permalink":"https://j84637587.github.io/2026/08/01/programming/RTOS/2026-08-01-RTOS%E8%A4%87%E7%BF%92%20Part2/","path":"2026/08/01/programming/RTOS/2026-08-01-RTOS複習 Part2/","title":"2026-08-01-RTOS複習 Part2"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2026-08-01-RTOS複習 Part2 | SpicyRat's Engineer Journey</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SpicyRat's Engineer Journey</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜尋" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>關於</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分類</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%A7%8B"><span class="nav-number">1.</span> <span class="nav-text"> 架構</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BC%8F%E7%A2%BC"><span class="nav-number">2.</span> <span class="nav-text"> 程式碼</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B7%A8%E8%AD%AF"><span class="nav-number">3.</span> <span class="nav-text"> 編譯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%93%E5%8C%85"><span class="nav-number">4.</span> <span class="nav-text"> 打包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%AC%E8%A9%A6"><span class="nav-number">5.</span> <span class="nav-text"> 測試</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%B2%E9%9A%8E"><span class="nav-number">6.</span> <span class="nav-text"> 進階</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A8%8B%E5%BC%8F%E7%A2%BC-2"><span class="nav-number">6.1.</span> <span class="nav-text"> 程式碼</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%AC%E8%A9%A6-2"><span class="nav-number">6.2.</span> <span class="nav-text"> 測試</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">SpicyRat</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://j84637587.github.io/2026/08/01/programming/RTOS/2026-08-01-RTOS%E8%A4%87%E7%BF%92%20Part2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="SpicyRat">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2026-08-01-RTOS複習 Part2 | SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2026-08-01-RTOS複習 Part2
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">發表於</span>
+
+      <time title="創建時間：2026-08-01 16:10:44" itemprop="dateCreated datePublished" datetime="2026-08-01T16:10:44+08:00">2026-08-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新於</span>
+      <time title="修改時間：2026-08-25 22:05:14" itemprop="dateModified" datetime="2026-08-25T22:05:14+08:00">2026-08-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>因為本人最近在求職，需要複習相關RTOS知識，所以整理了一些筆記，方便自己複習，也希望對其他人有幫助。</p>
+</blockquote>
+<p>延續上篇 (<a href="2026-08-01-RTOS%E8%A4%87%E7%BF%92%20Part1.md">Part1</a>)，我們在上篇文章簡單架設了環境，並測試簡單的系統啟動時自動執行的程式來簡單驗證。</p>
+<p>接下來要接觸有關 Driver 的部分。 QEMU 可以模擬一些硬體設備，像是 UART、網路卡、SD 卡等等，這些設備都可以透過 kernel module 來操作。</p>
+<p>因此本 Part 會來簡單撰寫一個<strong>虛擬感測器 Driver</strong>，用來模擬溫度感測器。</p>
+<blockquote>
+<p>Driver（驅動程式）是跑在 Linux kernel 內部 的程式，用來把硬體或虛擬裝置，提供成 user-space 可使用的標準介面。<br />
+一般程式 → 跑在 user space → 權限受限制 → 出錯通常只會讓該程式結束<br />
+Driver → *.ko → 跑在 kernel space → 可操作裝置、記憶體、interrupt、DMA 等底層資源 → 寫錯可能讓整台 Linux kernel crash</p>
+</blockquote>
+<h2 id="架構"><a class="markdownIt-Anchor" href="#架構"></a> 架構</h2>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">虛擬感測器 kernel module</span><br><span class="line">  ├─ 載入後建立 /dev/virtual_sensor</span><br><span class="line">  ├─ kernel timer 每秒產生假溫度資料</span><br><span class="line">  ├─ read() 讓使用者程式讀取資料</span><br><span class="line">  ├─ ioctl() 設定取樣頻率</span><br><span class="line">  └─ user-space 程式讀取並印出結果</span><br></pre></td></tr></table></figure>
+<h2 id="程式碼"><a class="markdownIt-Anchor" href="#程式碼"></a> 程式碼</h2>
+<p>首先在隨便一個目錄下建立一個 <code>virtual_sensor.c</code>，並貼上以下程式碼：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/fs.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/init.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/kernel.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/miscdevice.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/uaccess.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> temperature = <span class="number">250</span>; <span class="comment">// 溫度, 注意這裡使用 static 讓變數在 module 卸載後不會被釋放</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// read() 函式，當使用者程式呼叫 read() 時會被呼叫</span></span><br><span class="line"><span class="comment">// virtual_sensor_read 不是固定名稱，你可以自由命名</span></span><br><span class="line"><span class="type">static</span> <span class="type">ssize_t</span> <span class="title function_">virtual_sensor_read</span><span class="params">(</span></span><br><span class="line"><span class="params">    <span class="keyword">struct</span> file *file, <span class="type">char</span> __user *buffer, <span class="type">size_t</span> count, <span class="type">loff_t</span> *offset)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> message[<span class="number">32</span>];</span><br><span class="line">    <span class="type">int</span> length;</span><br><span class="line"></span><br><span class="line">    (<span class="type">void</span>)file;</span><br><span class="line"></span><br><span class="line">    temperature++;</span><br><span class="line">    length = scnprintf(</span><br><span class="line">        message, <span class="keyword">sizeof</span>(message), <span class="string">&quot;temperature=%d.%d C\n&quot;</span>,</span><br><span class="line">        temperature / <span class="number">10</span>, temperature % <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> simple_read_from_buffer(buffer, count, offset, message, length);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定義 file_operations 結構，指定 read() 函式</span></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">virtual_sensor_fops</span> =</span> &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .read = virtual_sensor_read,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定義 miscdevice 結構，指定名稱和 file_operations</span></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">miscdevice</span> <span class="title">virtual_sensor_device</span> =</span> &#123;</span><br><span class="line">    .minor = MISC_DYNAMIC_MINOR,</span><br><span class="line">    .name = <span class="string">&quot;virtual_sensor&quot;</span>,</span><br><span class="line">    .fops = &amp;virtual_sensor_fops,</span><br><span class="line">    .mode = <span class="number">0444</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// module 初始化函式，當模組載入時會被呼叫</span></span><br><span class="line"><span class="comment">// virtual_sensor_init 不是固定名稱，你可以自由命名</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> __init <span class="title function_">virtual_sensor_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> result = misc_register(&amp;virtual_sensor_device); <span class="comment">// 這裡會建立 /dev/virtual_sensor</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (result == <span class="number">0</span>)</span><br><span class="line">        pr_info(<span class="string">&quot;virtual_sensor: loaded\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// module 卸載函式，當模組卸載時會被呼叫</span></span><br><span class="line"><span class="comment">// virtual_sensor_exit 不是固定名稱，你可以自由命名</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> __exit <span class="title function_">virtual_sensor_exit</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    misc_deregister(&amp;virtual_sensor_device);</span><br><span class="line">    pr_info(<span class="string">&quot;virtual_sensor: unloaded\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(virtual_sensor_init); <span class="comment">// 指定初始化函式</span></span><br><span class="line">module_exit(virtual_sensor_exit); <span class="comment">// 指定卸載函式</span></span><br><span class="line"></span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br><span class="line">MODULE_DESCRIPTION(<span class="string">&quot;A virtual temperature sensor&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>然後我們通過 <code>Makefile</code> 來編譯這個 kernel module，建立一個 <code>Makefile</code>，內容如下。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">obj-m += virtual_sensor.o</span><br></pre></td></tr></table></figure>
+<h2 id="編譯"><a class="markdownIt-Anchor" href="#編譯"></a> 編譯</h2>
+<p>接著開始編譯，指令如下。</p>
+<ul>
+<li>M 參數是指定 kernel source 的路徑</li>
+<li>ARCH 是指定架構</li>
+<li>CROSS_COMPILE 是指定交叉編譯器的前綴</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">make -C ~/buildroot/output/build/linux-6.18.7 \</span><br><span class="line">  M=<span class="string">&quot;<span class="variable">$HOME</span>/virtual_sensor&quot;</span> \</span><br><span class="line">  ARCH=arm \</span><br><span class="line">  CROSS_COMPILE=<span class="string">&quot;<span class="variable">$HOME</span>/buildroot/output/host/bin/arm-buildroot-linux-gnueabi-&quot;</span> \</span><br><span class="line">  modules</span><br></pre></td></tr></table></figure>
+<p>執行後會產生一個 <code>virtual_sensor.ko</code> 的檔案，是 Kernel Object ，這就是我們的 kernel module。</p>
+<ul>
+<li>和一般程式的差異： <strong>.c → 編譯＋連結 → ELF 執行檔 → Linux 用 ./program 啟動成一個行程</strong></li>
+<li>Kernel driver： <strong>.c → kernel module build → .ko → Linux 用 insmod 載入到 kernel 內執行</strong></li>
+</ul>
+<h2 id="打包"><a class="markdownIt-Anchor" href="#打包"></a> 打包</h2>
+<p>接著複製模組並重新產生 image。其實就只是把檔案打包到 image。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p board/local-overlay/lib/modules</span><br><span class="line"><span class="built_in">cp</span> ~/virtual_sensor/virtual_sensor.ko board/local-overlay/lib/modules/</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+<h2 id="測試"><a class="markdownIt-Anchor" href="#測試"></a> 測試</h2>
+<p>然後透過這個 image 來啟動 QEMU，並在 QEMU 中載入模組。</p>
+<ul>
+<li>insmod 是用來載入 kernel module 的指令</li>
+<li>dmesg 是用來查看 kernel log 的指令，也就是程式碼中的 pr_info()</li>
+<li>tail 是用來查看檔案最後幾行的指令</li>
+</ul>
+<p>為甚麼要看 /dev/virtual_sensor 呢？因為我們在 module 中使用了 misc_register 來註冊一個 misc device，這個 device 會在 /dev 下建立一個檔案，名稱就是我們在 miscdevice 結構中指定的 name，也就是 virtual_sensor。</p>
+<p>然後 cat 該路徑，就會呼叫我們在 module 中定義的 read() 函式，並回傳溫度資料。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">insmod /lib/modules/virtual_sensor.ko</span><br><span class="line">dmesg | <span class="built_in">tail</span></span><br><span class="line"><span class="built_in">ls</span> -l /dev/virtual_sensor</span><br><span class="line"><span class="built_in">cat</span> /dev/virtual_sensor</span><br></pre></td></tr></table></figure>
+<p>預期會看到 <code>virtual_sensor: loaded</code> 以及 <code>temperature=25.1 C</code></p>
+<p>最後可測試卸載：</p>
+<ul>
+<li>rmmod 是用來卸載 kernel module 的指令</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rmmod virtual_sensor</span><br><span class="line">dmesg | <span class="built_in">tail</span></span><br></pre></td></tr></table></figure>
+<h2 id="進階"><a class="markdownIt-Anchor" href="#進階"></a> 進階</h2>
+<p>溫度通常是會一直變化的，所以我們也可以來模擬看看。</p>
+<h3 id="程式碼-2"><a class="markdownIt-Anchor" href="#程式碼-2"></a> 程式碼</h3>
+<ul>
+<li>atomic.h 這是用來避免多執行緒上下文的 race condition 的函式庫，未來有機會提到，在此先不深入研究，先使用即可。</li>
+<li>timer.h 用來計時</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/atomic.h&gt;</span>      <span class="comment">/* atomic_t：安全讀寫可能被並行存取的數值 */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/fs.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/init.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/kernel.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/miscdevice.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/module.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/timer.h&gt;</span>       <span class="comment">/* timer_list、timer_setup、mod_timer */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;linux/uaccess.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">atomic_t</span> temperature = ATOMIC_INIT(<span class="number">210</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> temperature_step = <span class="number">1</span>; <span class="comment">// 每次更新的變化量：1 表示升溫 0.1°C，-1 表示降溫 0.1°C</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">timer_list</span> <span class="title">temperature_timer</span>;</span> <span class="comment">// timer 物件；用來每秒觸發一次溫度更新</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">virtual_sensor_update</span><span class="params">(<span class="keyword">struct</span> timer_list *timer)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> current_temperature = <span class="type">atomic_read</span>(&amp;temperature); <span class="comment">// 讀取目前溫度</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 因為在這個函式沒有使用 timer 參數，會報警告，而有些比較嚴格的編譯器會直接報Error，所以用 (void)timer; 來避免警告與錯誤</span></span><br><span class="line">    <span class="comment">// 加上 (void) 是用來明確表示：這個參數刻意不用</span></span><br><span class="line">    <span class="comment">// 如果不加反而可能產生無意義或漏寫的程式，甚至警告</span></span><br><span class="line">    (<span class="type">void</span>)timer; </span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 到達 22.0°C 後，改為降溫</span></span><br><span class="line">    <span class="keyword">if</span> (current_temperature &gt;= <span class="number">220</span>)</span><br><span class="line">        temperature_step = <span class="number">-1</span>;</span><br><span class="line">    <span class="comment">// 到達 21.0°C 後，改為升溫</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (current_temperature &lt;= <span class="number">210</span>)</span><br><span class="line">        temperature_step = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 將溫度加上或減去 0.1°C</span></span><br><span class="line">    <span class="type">atomic_add</span>(temperature_step, &amp;temperature);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//  將 timer 排程到一秒後再次執行；HZ 個 jiffies 約等於一秒</span></span><br><span class="line">    mod_timer(&amp;temperature_timer, jiffies + HZ);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">ssize_t</span> <span class="title function_">virtual_sensor_read</span><span class="params">(</span></span><br><span class="line"><span class="params">    <span class="keyword">struct</span> file *file, <span class="type">char</span> __user *buffer, <span class="type">size_t</span> count, <span class="type">loff_t</span> *offset)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> message[<span class="number">32</span>];</span><br><span class="line">    <span class="type">int</span> current_temperature = <span class="type">atomic_read</span>(&amp;temperature);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> length;</span><br><span class="line"></span><br><span class="line">    (<span class="type">void</span>)file;</span><br><span class="line"></span><br><span class="line">    length = scnprintf(</span><br><span class="line">        message, <span class="keyword">sizeof</span>(message), <span class="string">&quot;temperature=%d.%d C\n&quot;</span>,</span><br><span class="line">        current_temperature / <span class="number">10</span>, current_temperature % <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> simple_read_from_buffer(buffer, count, offset, message, length);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">virtual_sensor_fops</span> =</span> &#123;</span><br><span class="line">    .owner = THIS_MODULE,</span><br><span class="line">    .read = virtual_sensor_read,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">miscdevice</span> <span class="title">virtual_sensor_device</span> =</span> &#123;</span><br><span class="line">    .minor = MISC_DYNAMIC_MINOR,</span><br><span class="line">    .name = <span class="string">&quot;virtual_sensor&quot;</span>,</span><br><span class="line">    .fops = &amp;virtual_sensor_fops,</span><br><span class="line">    .mode = <span class="number">0444</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> __init <span class="title function_">virtual_sensor_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> result = misc_register(&amp;virtual_sensor_device);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (result != <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 初始化 timer，指定時間到時要呼叫 virtual_sensor_update()</span></span><br><span class="line">    timer_setup(&amp;temperature_timer, virtual_sensor_update, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// module 載入後一秒(jiffies + HZ)，開始第一次溫度更新</span></span><br><span class="line">    mod_timer(&amp;temperature_timer, jiffies + HZ);</span><br><span class="line"></span><br><span class="line">    pr_info(<span class="string">&quot;virtual_sensor: loaded\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> __exit <span class="title function_">virtual_sensor_exit</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 卸載 module 前取消 timer，並等待可能正在執行的 callback 結束</span></span><br><span class="line">    timer_delete_sync(&amp;temperature_timer);</span><br><span class="line"></span><br><span class="line">    misc_deregister(&amp;virtual_sensor_device);</span><br><span class="line">    pr_info(<span class="string">&quot;virtual_sensor: unloaded\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">module_init(virtual_sensor_init);</span><br><span class="line">module_exit(virtual_sensor_exit);</span><br><span class="line"></span><br><span class="line">MODULE_LICENSE(<span class="string">&quot;GPL&quot;</span>);</span><br><span class="line">MODULE_DESCRIPTION(<span class="string">&quot;A virtual temperature sensor with a kernel timer&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>後續操作與前面一樣，重新編譯、打包、啟動 QEMU、載入模組、查看 /dev/virtual_sensor。在此就不再贅述。</p>
+<h3 id="測試-2"><a class="markdownIt-Anchor" href="#測試-2"></a> 測試</h3>
+<p>同樣使用 <code>insmod</code> 載入。</p>
+<p>然後為了方便去觀察，我們可以使用 <code>watch</code> 指令來每秒執行一次 <code>cat /dev/virtual_sensor</code>，這樣就可以看到溫度的變化。以每 1 秒更新的方式來觀察溫度變化，指令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 <span class="built_in">cat</span> /dev/virtual_sensor</span><br></pre></td></tr></table></figure>
+<p>之後就可以看到溫度在 21.0°C 與 22.0°C 之間變化，模擬了溫度感測器的行為。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/RTOS/" rel="tag"># RTOS</a>
+              <a href="/tags/WSL/" rel="tag"># WSL</a>
+              <a href="/tags/EmbeddedSystem/" rel="tag"># EmbeddedSystem</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/03/09/deep-learning/2026-03-09-%E5%90%84%E7%A8%AENormalization%E4%BB%8B%E7%B4%B9/" rel="prev" title="各種 Normalization 介紹">
+                  <i class="fa fa-angle-left"></i> 各種 Normalization 介紹
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/01/programming/RTOS/2026-08-01-RTOS%E8%A4%87%E7%BF%92%20Part1/" rel="next" title="2026-08-01-RTOS複習 Part1">
+                  2026-08-01-RTOS複習 Part1 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder"><a target="_blank" rel="noopener" href='https://github.com/j84637587'>SpicyRat</a></span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 強力驅動
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="回到頂端">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"j84637587","repo":"j84637587.github.io","client_id":"Ov23liRrHEp1XYs7VMgQ","client_secret":"3b725b79e5f9b528ef1baad6a89305d024743dbc","admin_user":"j84637587","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-TW","body":null,"labels":"Gitalk","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"ee68a2608d8ec1fba4ed50bf55d0d235"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"j84637587.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜尋...","empty":"我們無法找到任何有關 ${query} 的搜索結果","hits_time":"找到 ${hits} 個搜索結果（用時 ${time} 毫秒）","hits":"找到 ${hits} 個搜索結果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Modbus學習  因為本人最近在求職，對於相關工業協定有興趣，所以整理了一些筆記，方便自己複習，也希望對其他人有幫助。   Modbus 到底是什麼? 簡單來講，他就是一套工業通訊協定，主要用於工業自動化系統中設備之間的資料傳輸。 他最主要工作是去定義說：  我要讀哪個設備的哪一筆資料? 我要寫哪個暫存器? 這個命令代表什麼?  例如： Client&#x2F;Master 端想要讀取 Server&#x2F;S">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2026-08-13-Modbus學習">
+<meta property="og:url" content="https://j84637587.github.io/2026/08/13/programming/Protocals/2026-08-13-Modbus%E5%AD%B8%E7%BF%92/index.html">
+<meta property="og:site_name" content="SpicyRat&#39;s Engineer Journey">
+<meta property="og:description" content="Modbus學習  因為本人最近在求職，對於相關工業協定有興趣，所以整理了一些筆記，方便自己複習，也希望對其他人有幫助。   Modbus 到底是什麼? 簡單來講，他就是一套工業通訊協定，主要用於工業自動化系統中設備之間的資料傳輸。 他最主要工作是去定義說：  我要讀哪個設備的哪一筆資料? 我要寫哪個暫存器? 這個命令代表什麼?  例如： Client&#x2F;Master 端想要讀取 Server&#x2F;S">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2026-08-12T19:34:56.000Z">
+<meta property="article:modified_time" content="2026-08-25T14:05:14.311Z">
+<meta property="article:author" content="SpicyRat">
+<meta property="article:tag" content="Modbus">
+<meta property="article:tag" content="Protocol">
+<meta property="article:tag" content="Industrial Communication Protocol">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://j84637587.github.io/2026/08/13/programming/Protocals/2026-08-13-Modbus%E5%AD%B8%E7%BF%92/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-TW","comments":true,"permalink":"https://j84637587.github.io/2026/08/13/programming/Protocals/2026-08-13-Modbus%E5%AD%B8%E7%BF%92/","path":"2026/08/13/programming/Protocals/2026-08-13-Modbus學習/","title":"2026-08-13-Modbus學習"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2026-08-13-Modbus學習 | SpicyRat's Engineer Journey</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SpicyRat's Engineer Journey</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜尋" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>關於</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分類</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#modbus%E5%AD%B8%E7%BF%92"><span class="nav-number">1.</span> <span class="nav-text"> Modbus學習</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#modbus-%E5%88%B0%E5%BA%95%E6%98%AF%E4%BB%80%E9%BA%BC"><span class="nav-number">1.1.</span> <span class="nav-text"> Modbus 到底是什麼?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#modbus-%E8%B3%87%E6%96%99%E5%BD%A2%E5%BC%8F"><span class="nav-number">1.2.</span> <span class="nav-text"> Modbus 資料形式?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#client-master-%E6%80%8E%E9%BA%BC%E7%9F%A5%E9%81%93%E8%A6%81%E8%AE%80%E5%93%AA%E5%80%8B%E6%9A%AB%E5%AD%98%E5%99%A8"><span class="nav-number">1.3.</span> <span class="nav-text"> Client &#x2F; Master 怎麼知道要讀哪個暫存器？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#modbus-rtuasciitcpudp-%E6%98%AF%E7%94%9A%E9%BA%BC"><span class="nav-number">1.4.</span> <span class="nav-text"> Modbus RTU&#x2F;ASCII&#x2F;TCP&#x2F;UDP 是甚麼?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#modbus-rturemote-terminal-unit"><span class="nav-number">1.4.1.</span> <span class="nav-text"> Modbus RTU(Remote Terminal Unit)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#modbus-ascii"><span class="nav-number">1.4.2.</span> <span class="nav-text"> Modbus ASCII</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#modbus-tcptransmission-control-protocol"><span class="nav-number">1.4.3.</span> <span class="nav-text"> Modbus TCP(Transmission Control Protocol)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#mbap-header-modbus-application-protocol-header"><span class="nav-number">1.4.3.1.</span> <span class="nav-text"> MBAP Header (Modbus Application Protocol Header)：</span></a></li></ol></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">SpicyRat</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://j84637587.github.io/2026/08/13/programming/Protocals/2026-08-13-Modbus%E5%AD%B8%E7%BF%92/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="SpicyRat">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2026-08-13-Modbus學習 | SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2026-08-13-Modbus學習
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">發表於</span>
+
+      <time title="創建時間：2026-08-13 03:34:56" itemprop="dateCreated datePublished" datetime="2026-08-13T03:34:56+08:00">2026-08-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新於</span>
+      <time title="修改時間：2026-08-25 22:05:14" itemprop="dateModified" datetime="2026-08-25T22:05:14+08:00">2026-08-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="modbus學習"><a class="markdownIt-Anchor" href="#modbus學習"></a> Modbus學習</h1>
+<blockquote>
+<p>因為本人最近在求職，對於相關工業協定有興趣，所以整理了一些筆記，方便自己複習，也希望對其他人有幫助。</p>
+</blockquote>
+<h2 id="modbus-到底是什麼"><a class="markdownIt-Anchor" href="#modbus-到底是什麼"></a> Modbus 到底是什麼?</h2>
+<p>簡單來講，他就是一套<strong>工業通訊協定</strong>，主要用於工業自動化系統中設備之間的資料傳輸。</p>
+<p>他最主要工作是去定義說：</p>
+<ul>
+<li>我要讀哪個設備的哪一筆資料?</li>
+<li>我要寫哪個暫存器?</li>
+<li>這個命令代表什麼?</li>
+</ul>
+<p>例如： Client/Master 端想要讀取 Server/Slave 端的溫度值，他會發送一個讀取命令，指定要讀取的暫存器地址。</p>
+<ul>
+<li>Client/Master 要怎麼知道要讀取的暫存器地址是什麼? 這就要看設備的規格書，通常會有一個表格列出每個暫存器的功能與地址。</li>
+</ul>
+<p>所以這個協定就是在規定</p>
+<ul>
+<li>我要做什麼?</li>
+<li>讀哪裡?</li>
+<li>讀多少?</li>
+<li>寫什麼?</li>
+</ul>
+<p>所以這樣看來 Modbus 其實是走在 Layer 7 的應用層協定，主要是定義資料的格式與傳輸方式。就好比 HTTP, FTP, DNS 這些協定一樣，都是在應用層去定義資料的格式與傳輸方式。</p>
+<h2 id="modbus-資料形式"><a class="markdownIt-Anchor" href="#modbus-資料形式"></a> Modbus 資料形式?</h2>
+<p>Modbus 最常看到四種資料，稱作<strong>功能碼</strong>，可以當作遊戲中的 Op Code。</p>
+<table>
+<thead>
+<tr>
+<th>功能碼</th>
+<th>類型</th>
+<th>名稱</th>
+<th>讀寫</th>
+<th>資料大小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x01</td>
+<td>Coil</td>
+<td>線圈</td>
+<td>Read / Write</td>
+<td>1 bit</td>
+</tr>
+<tr>
+<td>0x02</td>
+<td>Discrete Input</td>
+<td>離散輸入</td>
+<td>Read Only</td>
+<td>1 bit</td>
+</tr>
+<tr>
+<td>0x03</td>
+<td>Input Register</td>
+<td>輸入暫存器</td>
+<td>Read Only</td>
+<td>16 bit</td>
+</tr>
+<tr>
+<td>0x04</td>
+<td>Holding Register</td>
+<td>保持暫存器</td>
+<td>Read / Write</td>
+<td>16 bit</td>
+</tr>
+</tbody>
+</table>
+<p>假設有一個機器，它包含馬達、按鈕開關、溫度感測器。<br />
+根據資料可以得出以下的表。</p>
+<table>
+<thead>
+<tr>
+<th>類型</th>
+<th>功能</th>
+<th>數值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coil</td>
+<td>馬達啟動/停止</td>
+<td>0/1</td>
+</tr>
+<tr>
+<td>Discrete Input</td>
+<td>按鈕開關狀態</td>
+<td>0/1</td>
+</tr>
+<tr>
+<td>Input Register</td>
+<td>溫度感測器數值</td>
+<td>16 bit 整數</td>
+</tr>
+<tr>
+<td>Holding Register</td>
+<td>馬達轉速設定值</td>
+<td>16 bit 整數</td>
+</tr>
+</tbody>
+</table>
+<p>所以像是 “Read Holding Registers”(這只是示意) 這個命令意思就是 “我要讀取設備裡的一組 16-bit Holding Register”。</p>
+<h2 id="client-master-怎麼知道要讀哪個暫存器"><a class="markdownIt-Anchor" href="#client-master-怎麼知道要讀哪個暫存器"></a> Client / Master 怎麼知道要讀哪個暫存器？</h2>
+<p>通常 Client / Master 端會依據設備的規格書來決定要讀取哪個暫存器。規格書會列出每個暫存器的地址、功能以及資料類型。而規格書稱作 “Modbus Register Map”。</p>
+<p>所以 Modbus 協定本身並不會告訴你要讀哪個暫存器，這是由設備的設計者決定的。</p>
+<h2 id="modbus-rtuasciitcpudp-是甚麼"><a class="markdownIt-Anchor" href="#modbus-rtuasciitcpudp-是甚麼"></a> Modbus RTU/ASCII/TCP/UDP 是甚麼?</h2>
+<p>Modbus 常常不會單獨出現會看到 Modbus RTU、Modbus ASCII、Modbus TCP 這些名詞。</p>
+<p>剛才有提到 Modbus 是 Layer 7 的應用層協定，因此這邊的 RTU、ASCII、TCP 其實是 Layer 2/3/4 的傳輸層協定。</p>
+<h3 id="modbus-rturemote-terminal-unit"><a class="markdownIt-Anchor" href="#modbus-rturemote-terminal-unit"></a> Modbus RTU(Remote Terminal Unit)</h3>
+<p>Modbus RTU 是 Modbus 的一種傳輸方式，使用二進位格式傳輸資料，通常用於串列通訊（RS-232、RS-485）。</p>
+<blockquote>
+<p>RS-232 電腦主機就看得到，在舊版的螢幕會使用的 Com Port (主要用來快速傳輸大量資料)。<br />
+RS-485 相較 RS-232 更適合長距離傳輸，且可以 1vN 通訊。</p>
+</blockquote>
+<p>封包結構長這樣：</p>
+<ul>
+<li>Address：設備地址，1 byte，範圍 0~247</li>
+<li>Function Code：功能碼，1 byte，範圍 1~255</li>
+<li>Data：資料，長度不固定，依功能碼而定</li>
+<li>CRC：循環冗餘檢查，2 byte，用來檢查資料是否正確</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Function Code</th>
+<th>Data</th>
+<th>CRC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 Byte</td>
+<td>1 Byte</td>
+<td>n</td>
+<td>2 Byte</td>
+</tr>
+</tbody>
+</table>
+<p>你可以注意到 Address 只有 1 byte，範圍 0~247。</p>
+<p>但在 Register 中，地址通常是 16 bit，例如 40001。所以實際傳送的 Address 會是 <strong>zero-based offset</strong>，也就是從 0 開始計數。</p>
+<p>例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">40001 → 第一個 Holding Register</span><br><span class="line">40002 → 第二個 Holding Register</span><br><span class="line">40003 → 第三個 Holding Register</span><br></pre></td></tr></table></figure>
+<p>則假設要讀取 40001，實際傳送的 Address 會是 0x0000。</p>
+<p>要讀取 40002，實際傳送的 Address 會是 0x0001。</p>
+<p>但實際上還是要根據設備文件決定。不一定是上面這樣對應。</p>
+<h3 id="modbus-ascii"><a class="markdownIt-Anchor" href="#modbus-ascii"></a> Modbus ASCII</h3>
+<p>Modbus ASCII 是 Modbus 的另一種傳輸方式，使用 ASCII 字元格式傳輸資料，通常用於串列通訊（RS-232、RS-485）。</p>
+<p>所以 Modbus ASCII 跟 Modbus RTU 很像，最大的不同就是資料傳輸的格式不同，ASCII 是用文字表示，RTU 是用二進位表示。</p>
+<p>阿想當然 String vs Binary 資料量差距很大，所以 Modbus ASCII 的傳輸效率會比 Modbus RTU 低很多。</p>
+<h3 id="modbus-tcptransmission-control-protocol"><a class="markdownIt-Anchor" href="#modbus-tcptransmission-control-protocol"></a> Modbus TCP(Transmission Control Protocol)</h3>
+<p>Modbus TCP 是 Modbus 的一種傳輸方式，使用 TCP/IP 協定在網路上傳輸資料，通常用於以太網通訊。</p>
+<p>所以注意這裡的 <strong>Modbus TCP = Modbus + TCP/IP</strong>。</p>
+<p>所以完整分層會是這樣：</p>
+<p>走的是網路協議。</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Protocol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>Modbus</td>
+</tr>
+<tr>
+<td>4</td>
+<td>TCP</td>
+</tr>
+<tr>
+<td>3</td>
+<td>IP</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Ethernet</td>
+</tr>
+</tbody>
+</table>
+<p>所以前面的 “Read Holding Registers” 在這邊，其實只是把 Modbus 的資料包裝在 TCP/IP 的封包裡面傳輸。</p>
+<p>Modbus Request -&gt; TCP -&gt; TCP Segment -&gt; IP -&gt; IP Packet -&gt; Ethernet Frame -&gt; Ethernet</p>
+<p>封包結構長這樣：</p>
+<ul>
+<li>Transaction Identifier：交易識別碼，2 byte，用來識別請求與回應的對應關係</li>
+<li>Function Code：功能碼，1 byte，範圍 1~255</li>
+<li>Data：資料，長度不固定，依功能碼而定</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>MBAP Header</th>
+<th>Function Code</th>
+<th>Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7 Bytes</td>
+<td>1 Byte</td>
+<td>n</td>
+</tr>
+</tbody>
+</table>
+<p>與 RTU 的差別在於：</p>
+<ol>
+<li>沒有 Address，因為 TCP/IP 已經有 IP Address 了</li>
+<li>多了 MBAP Header，用來識別請求與回應的對應關係</li>
+<li>沒有 CRC，因為 TCP/IP 已經有檢查機制了
+<ul>
+<li>所以常常會見到的是用 TCP 而不是 UDP，因為 TCP 有可靠傳輸的機制，UDP 沒有。</li>
+</ul>
+</li>
+</ol>
+<h4 id="mbap-header-modbus-application-protocol-header"><a class="markdownIt-Anchor" href="#mbap-header-modbus-application-protocol-header"></a> MBAP Header (Modbus Application Protocol Header)：</h4>
+<p>MBAP Header 長這樣：</p>
+<ul>
+<li>Transaction Identifier：交易識別碼，2 byte，用來識別請求與回應的對應關係</li>
+<li>Protocol Identifier：協定識別碼，2 byte，固定為 0x000</li>
+<li>Length：長度，2 byte，表示後面資料的長度</li>
+<li>Unit Identifier：單位識別碼，1 byte，用來識別設備，通常用於 Modbus TCP to Modbus RTU 的橋接器</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Transaction Identifier</th>
+<th>Protocol Identifier</th>
+<th>Length</th>
+<th>Unit Identifier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2 Bytes</td>
+<td>2 Bytes</td>
+<td>2 Bytes</td>
+<td>1 Byte</td>
+</tr>
+</tbody>
+</table>
+<p>其中 Transaction Identifier 用來辨識是哪個請求的對應回應。</p>
+<p>例如 Client <strong>同時</strong>送：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Request A → Transaction ID = 1</span><br><span class="line">Request B → Transaction ID = 2</span><br><span class="line">Request C → Transaction ID = 3</span><br></pre></td></tr></table></figure>
+<p>Server 回應：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Response ID = 2</span><br></pre></td></tr></table></figure>
+<p>Client 就知道這是 Request B 的回應。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Modbus/" rel="tag"># Modbus</a>
+              <a href="/tags/Protocol/" rel="tag"># Protocol</a>
+              <a href="/tags/Industrial-Communication-Protocol/" rel="tag"># Industrial Communication Protocol</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part4/" rel="prev" title="2026-08-10-BMC學習 Part4">
+                  <i class="fa fa-angle-left"></i> 2026-08-10-BMC學習 Part4
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/16/programming/Protocals/2026-08-16-DNP3%E5%AD%B8%E7%BF%92/" rel="next" title="2026-08-16-DNP3學習">
+                  2026-08-16-DNP3學習 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder"><a target="_blank" rel="noopener" href='https://github.com/j84637587'>SpicyRat</a></span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 強力驅動
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="回到頂端">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"j84637587","repo":"j84637587.github.io","client_id":"Ov23liRrHEp1XYs7VMgQ","client_secret":"3b725b79e5f9b528ef1baad6a89305d024743dbc","admin_user":"j84637587","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-TW","body":null,"labels":"Gitalk","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"a7f055e939fc237ed1d021368a29d783"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>

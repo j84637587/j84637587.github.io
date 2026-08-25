@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"j84637587.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜尋...","empty":"我們無法找到任何有關 ${query} 的搜索結果","hits_time":"找到 ${hits} 個搜索結果（用時 ${time} 毫秒）","hits":"找到 ${hits} 個搜索結果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="2026-08-10-BMC學習 Part1  本人最近在求職，想要玩 BMC 相關職涯領域發展，但以前只有嵌入式的知識，所以嘗試學習，並同步整理筆記，方便自己記錄學習，也希望對其他人有幫助。   甚麼是 BMC ? BMC (Baseboard Management Controller) 是一種嵌入式控制器，通常用於伺服器和高階工作站中，用來監控和管理硬體設備。BMC 提供了遠程管理功能，使">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2026-08-10-BMC學習 Part1">
+<meta property="og:url" content="https://j84637587.github.io/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part1/index.html">
+<meta property="og:site_name" content="SpicyRat&#39;s Engineer Journey">
+<meta property="og:description" content="2026-08-10-BMC學習 Part1  本人最近在求職，想要玩 BMC 相關職涯領域發展，但以前只有嵌入式的知識，所以嘗試學習，並同步整理筆記，方便自己記錄學習，也希望對其他人有幫助。   甚麼是 BMC ? BMC (Baseboard Management Controller) 是一種嵌入式控制器，通常用於伺服器和高階工作站中，用來監控和管理硬體設備。BMC 提供了遠程管理功能，使">
+<meta property="og:locale" content="zh_TW">
+<meta property="article:published_time" content="2026-08-09T18:25:35.000Z">
+<meta property="article:modified_time" content="2026-08-25T14:05:14.311Z">
+<meta property="article:author" content="SpicyRat">
+<meta property="article:tag" content="BMC">
+<meta property="article:tag" content="OpenBMC">
+<meta property="article:tag" content="Embedded">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Yocto">
+<meta property="article:tag" content="D-Bus">
+<meta property="article:tag" content="Sensor">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://j84637587.github.io/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part1/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-TW","comments":true,"permalink":"https://j84637587.github.io/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part1/","path":"2026/08/10/programming/BMC/2026-08-10-BMC學習-Part1/","title":"2026-08-10-BMC學習 Part1"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2026-08-10-BMC學習 Part1 | SpicyRat's Engineer Journey</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha256-UF1fgpAiu3tPJN/uCqEUHNe7pnr+QR0SQDNfgglgtcM=" crossorigin="anonymous">
+  <script class="next-config" data-name="katex" type="application/json">{"copy_tex_js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js","integrity":"sha256-Us54+rSGDSTvIhKKUs4kygE2ipA0RXpWWh0/zLqw3bs="}}</script>
+  <script src="/js/third-party/math/katex.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切換導航欄" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">SpicyRat's Engineer Journey</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜尋" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首頁</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>關於</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>標籤</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分類</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>歸檔</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目錄
+        </li>
+        <li class="sidebar-nav-overview">
+          本站概要
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#2026-08-10-bmc%E5%AD%B8%E7%BF%92-part1"><span class="nav-number">1.</span> <span class="nav-text"> 2026-08-10-BMC學習 Part1</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9A%E9%BA%BC%E6%98%AF-bmc"><span class="nav-number">1.1.</span> <span class="nav-text"> 甚麼是 BMC ?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#requirements"><span class="nav-number">1.2.</span> <span class="nav-text"> Requirements</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#wsl-ubuntu-%E5%AE%89%E8%A3%9D%E7%9B%B8%E9%97%9C%E5%A5%97%E4%BB%B6-%E4%B8%A6-%E4%B8%8B%E8%BC%89-openbmc"><span class="nav-number">1.2.1.</span> <span class="nav-text"> WSL Ubuntu 安裝相關套件 並 下載 OpenBMC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setup-bmc-%E7%92%B0%E5%A2%83"><span class="nav-number">1.2.2.</span> <span class="nav-text"> Setup BMC 環境</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B7%A8%E8%AD%AF%E9%8C%AF%E8%AA%A41"><span class="nav-number">1.2.2.1.</span> <span class="nav-text"> 編譯錯誤1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B7%A8%E8%AD%AF%E9%8C%AF%E8%AA%A42"><span class="nav-number">1.2.2.2.</span> <span class="nav-text"> 編譯錯誤2</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A9%97%E8%AD%89"><span class="nav-number">1.2.3.</span> <span class="nav-text"> 驗證</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%96%8B%E6%A9%9F%E9%A9%97%E8%AD%89"><span class="nav-number">1.2.3.1.</span> <span class="nav-text"> 開機驗證</span></a></li></ol></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">SpicyRat</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">標籤</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-TW">
+    <link itemprop="mainEntityOfPage" href="https://j84637587.github.io/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="SpicyRat">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2026-08-10-BMC學習 Part1 | SpicyRat's Engineer Journey">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2026-08-10-BMC學習 Part1
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">發表於</span>
+
+      <time title="創建時間：2026-08-10 02:25:35" itemprop="dateCreated datePublished" datetime="2026-08-10T02:25:35+08:00">2026-08-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新於</span>
+      <time title="修改時間：2026-08-25 22:05:14" itemprop="dateModified" datetime="2026-08-25T22:05:14+08:00">2026-08-25</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="2026-08-10-bmc學習-part1"><a class="markdownIt-Anchor" href="#2026-08-10-bmc學習-part1"></a> 2026-08-10-BMC學習 Part1</h1>
+<blockquote>
+<p>本人最近在求職，想要玩 BMC 相關職涯領域發展，但以前只有嵌入式的知識，所以嘗試學習，並同步整理筆記，方便自己記錄學習，也希望對其他人有幫助。</p>
+</blockquote>
+<h2 id="甚麼是-bmc"><a class="markdownIt-Anchor" href="#甚麼是-bmc"></a> 甚麼是 BMC ?</h2>
+<p>BMC (Baseboard Management Controller) 是一種嵌入式控制器，通常用於伺服器和高階工作站中，用來監控和管理硬體設備。BMC 提供了遠程管理功能，使系統管理員可以在不直接接觸伺服器的情況下進行操作，例如開機、關機、重啟、監控硬體狀態等。</p>
+<p>工業電腦/伺服器中，其實不適只會有一個 CPU，通常會有兩個 CPU，一個是主要的 CPU，負責運行作業系統和應用程式，另一個是 BMC CPU，負責監控和管理硬體設備。(你可以當作有不只一個作業系統來理解)</p>
+<p>近期的趨勢除了這兩個 CPU 之外，還會有一個額外 CPU，用來做 WatchDog，監控 BMC CPU 是否正常運作，若 BMC CPU 異常，則 WatchDog CPU 會重置 BMC CPU。算是用來提高系統的可靠性。</p>
+<h2 id="requirements"><a class="markdownIt-Anchor" href="#requirements"></a> Requirements</h2>
+<ul>
+<li>qemu (用來模擬嵌入式系統)</li>
+<li>wsl (用來在Windows上使用Linux)</li>
+</ul>
+<h3 id="wsl-ubuntu-安裝相關套件-並-下載-openbmc"><a class="markdownIt-Anchor" href="#wsl-ubuntu-安裝相關套件-並-下載-openbmc"></a> WSL Ubuntu 安裝相關套件 並 下載 OpenBMC</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~</span><br><span class="line"></span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install -y \</span><br><span class="line">  git gcc g++ make file wget gawk diffstat \</span><br><span class="line">  bzip2 cpio chrpath zstd lz4 \</span><br><span class="line">  python3 python3-pexpect \</span><br><span class="line">  xz-utils socat iputils-ping</span><br><span class="line"></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/openbmc/openbmc.git</span><br><span class="line"><span class="built_in">cd</span> ~/openbmc</span><br></pre></td></tr></table></figure>
+<h3 id="setup-bmc-環境"><a class="markdownIt-Anchor" href="#setup-bmc-環境"></a> Setup BMC 環境</h3>
+<p>OpenBMC 板型／BMC platform 有很多種，每一種板型都有不同的硬體設備，OpenBMC 會針對每一種板型提供不同的 BSP (Board Support Package)，因此我們需要先選擇一個板型來學習。</p>
+<p>不同的硬體設備包含但不限於以下：</p>
+<ul>
+<li>不同 BMC SoC：AST2500、AST2600、NPCM750</li>
+<li>不同 flash 容量與分區</li>
+<li>不同 I2C 感測器、風扇、GPIO、LED</li>
+<li>不同網卡與 host power-control 接法</li>
+</ul>
+<p>這裡我們參考官方文件，選擇 <a target="_blank" rel="noopener" href="https://qemu.readthedocs.io/en/master/system/arm/aspeed.html">QEMU Romulus BMC</a> 來學習。</p>
+<ul>
+<li>Romulus 使用 AST2600 BMC SoC</li>
+</ul>
+<p>首先要下載 qemu 的 romulus 環境，並且設定好環境變數，並<strong>進入編譯環境</strong>。指令如下：</p>
+<p>這個指令的意思是：「在當前 shell 中執行 setup 腳本，並且指定 romulus 環境，然後執行 build-romulus 指令來建立 romulus 環境。」</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">. setup romulus build-romulus</span><br></pre></td></tr></table></figure>
+<p>執行成功後會自動載入 OpenBMC／BitBake 環境。</p>
+<p>接著要設定平行度，這裡設定為 4，表示同時使用 4 個 CPU 核心來編譯，這樣可以加快編譯速度。(你可以視需求修改，不要超過電腦實際 CPU 核心數量就好)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">nano conf/local.conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># 最底下加入，兩個平行數沒特別要求就設定一樣就好了。</span></span><br><span class="line"><span class="comment"># BB_NUMBER_THREADS = &quot;4&quot;</span></span><br><span class="line"><span class="comment"># PARALLEL_MAKE = &quot;-j 4&quot;</span></span><br></pre></td></tr></table></figure>
+<p>保存後開始編譯，指令如下：</p>
+<p>這個指令的意思是：「使用 BitBake，建置名為 obmc-phosphor-image 的 OpenBMC 韌體 image。」</p>
+<ul>
+<li>bitbake 是 OpenBMC 使用的建置工具，類似於 make，但更強大，支援多種語言和平台。</li>
+<li>obmc-phosphor-image 是 OpenBMC 提供的一個預設標準系統 image，包含了 BMC 所需的基本功能和服務，例如網路、SSH、Web UI、IPMI 等。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bitbake obmc-phosphor-image</span><br></pre></td></tr></table></figure>
+<p>然後就是超級漫長的等待… 🫠 ( nodejs 是 V8 的 所以光是她就編譯了4個小時</p>
+<h4 id="編譯錯誤1"><a class="markdownIt-Anchor" href="#編譯錯誤1"></a> 編譯錯誤1</h4>
+<p>如果出現以下錯誤訊息，單純是因為缺少 locale 設定。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Please make sure locale &#x27;en_US.UTF-8&#x27; is available on your system</span><br></pre></td></tr></table></figure>
+<p>輸入這些指令解決就好：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install -y locales</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在 locale 清單中啟用 en_US.UTF-8</span></span><br><span class="line">sudo sed -i <span class="string">&#x27;s/^[# ]*\(en_US.UTF-8 UTF-8\)/\1/&#x27;</span> /etc/locale.gen</span><br><span class="line"></span><br><span class="line"><span class="comment"># 依清單產生 locale</span></span><br><span class="line">sudo locale-gen</span><br><span class="line">sudo update-locale LANG=en_US.UTF-8</span><br><span class="line"></span><br><span class="line"><span class="comment"># 確認它確實存在</span></span><br><span class="line">locale -a | grep -i en_us</span><br><span class="line"></span><br><span class="line"><span class="comment"># 讓目前終端機立即生效</span></span><br><span class="line"><span class="built_in">export</span> LANG=en_US.UTF-8</span><br><span class="line"><span class="built_in">export</span> LC_ALL=en_US.UTF-8</span><br><span class="line"></span><br><span class="line">locale</span><br></pre></td></tr></table></figure>
+<h4 id="編譯錯誤2"><a class="markdownIt-Anchor" href="#編譯錯誤2"></a> 編譯錯誤2</h4>
+<p>我在一開始編譯時，沒有注意到電腦空間導致空間不足，兩個 Task 失敗，訊息如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Summary: 2 tasks failed:</span><br><span class="line">  /home/j84637587/openbmc/meta/recipes-devtools/cmake/cmake-native_4.4.0.bb:do_compile</span><br><span class="line">    log: /home/j84637587/openbmc/build-romulus/tmp/work/x86_64-linux/cmake-native/4.4.0/temp/log.do_compile.1139</span><br><span class="line">  /home/j84637587/openbmc/meta/recipes-devtools/gcc/gcc-cross_16.1.bb:do_compile</span><br><span class="line">    log: /home/j84637587/openbmc/build-romulus/tmp/work/x86_64-linux/gcc-cross-arm/16.1.0/temp/log.do_compile.1140</span><br><span class="line">Summary: There were 4 ERROR messages, returning a non-zero exit code.</span><br></pre></td></tr></table></figure>
+<p>但是在解決空間問題後繼續編譯仍然會報失敗，原因是 BitBake 會把失敗的 Task 記錄下來，並且不會自動重新編譯，所以我們需要手動清除這些 Task 的狀態，然後再重新編譯。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bitbake -c cleansstate cmake-native gcc-cross-arm</span><br><span class="line">bitbake cmake-native</span><br><span class="line">bitbake gcc-cross-arm</span><br><span class="line">bitbake obmc-phosphor-image</span><br></pre></td></tr></table></figure>
+<h3 id="驗證"><a class="markdownIt-Anchor" href="#驗證"></a> 驗證</h3>
+<p>建置好了後，先確認產物與 QEMU 是否支援 Romulus。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/openbmc/build-romulus</span><br><span class="line"></span><br><span class="line"><span class="built_in">ls</span> -lh tmp/deploy/images/romulus/</span><br><span class="line">qemu-system-arm -machine <span class="built_in">help</span> | grep romulus-bmc</span><br></pre></td></tr></table></figure>
+<p>預期 image 檔名類似 <code>obmc-phosphor-image-romulus.static.mtd</code><br />
+以及 <code>romulus-bmc          OpenPOWER Romulus BMC (ARM1176)</code></p>
+<h4 id="開機驗證"><a class="markdownIt-Anchor" href="#開機驗證"></a> 開機驗證</h4>
+<p>使用打包好的 image 來啟動 QEMU，並且使用 SSH 登入。</p>
+<p>這個指令的意思是：「使用 QEMU 模擬一個 Romulus BMC 硬體平台，並且使用 user 模式網路，將 obmc-phosphor-image-romulus.static.mtd 映像檔掛載為 mtd 裝置，並且不啟動圖形介面。」</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-arm \</span><br><span class="line">  -M romulus-bmc \</span><br><span class="line">  -nic user \</span><br><span class="line">  -drive file=tmp/deploy/images/romulus/image-bmc,format=raw,<span class="keyword">if</span>=mtd \</span><br><span class="line">  -nographic</span><br></pre></td></tr></table></figure>
+<p>帳號密碼預設為<code>root</code>與<code>0penBmc</code>。</p>
+<p>接著確認系統是否正常的基本檢查，執行以下指令：</p>
+<p>指令的意思：</p>
+<ul>
+<li>查看 Linux 核心版本與架構</li>
+<li>查看哪些 systemd 服務啟動失敗。(預期是無輸出)</li>
+<li>列出前幾個 D-Bus service。OpenBMC 的感測器、日誌…等元件，大多透過 D-Bus 溝通；這能確認 D-Bus 正在運作。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uname -a</span><br><span class="line">systemctl --failed</span><br><span class="line">busctl list | head</span><br></pre></td></tr></table></figure>
+<p>都沒問題就完成了環境的建置。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/BMC/" rel="tag"># BMC</a>
+              <a href="/tags/OpenBMC/" rel="tag"># OpenBMC</a>
+              <a href="/tags/Embedded/" rel="tag"># Embedded</a>
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+              <a href="/tags/Yocto/" rel="tag"># Yocto</a>
+              <a href="/tags/D-Bus/" rel="tag"># D-Bus</a>
+              <a href="/tags/Sensor/" rel="tag"># Sensor</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/08/06/programming/RTOS/2026-08-06-RTOS%E8%A4%87%E7%BF%92%20Part5/" rel="prev" title="2026-08-06-RTOS複習 Part5">
+                  <i class="fa fa-angle-left"></i> 2026-08-06-RTOS複習 Part5
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/08/10/programming/BMC/2026-08-10-BMC%E5%AD%B8%E7%BF%92-Part2/" rel="next" title="2026-08-10-BMC學習 Part2">
+                  2026-08-10-BMC學習 Part2 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder"><a target="_blank" rel="noopener" href='https://github.com/j84637587'>SpicyRat</a></span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" rel="noopener" target="_blank">NexT.Pisces</a> 強力驅動
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="回到頂端">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"j84637587","repo":"j84637587.github.io","client_id":"Ov23liRrHEp1XYs7VMgQ","client_secret":"3b725b79e5f9b528ef1baad6a89305d024743dbc","admin_user":"j84637587","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":"zh-TW","body":null,"labels":"Gitalk","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"f9709e6cf51d5383b619f8be66c954ac"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>
